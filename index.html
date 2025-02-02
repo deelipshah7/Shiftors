@@ -234,233 +234,89 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const loginContainer = document.getElementById('loginContainer');
-      const signupContainer = document.getElementById('signupContainer');
-      const shiftContainer = document.getElementById('shiftContainer');
-      const loginForm = document.getElementById('loginForm');
-      const signupForm = document.getElementById('signupForm');
-      const shiftForm = document.getElementById('shiftForm');
-      const shiftList = document.getElementById('shiftList');
-      const weekList = document.getElementById('weekList');
-      const switchToSignup = document.getElementById('switchToSignup');
-      const switchToLogin = document.getElementById('switchToLogin');
+  document.addEventListener('DOMContentLoaded', () => {
+  const shiftForm = document.getElementById('shiftForm');
+  const shiftList = document.getElementById('shiftList');
+  const weekList = document.getElementById('weekList');
 
-      let currentUser = null;
+  let shifts = [];
 
-      // Function to display shifts
-      function displayShifts() {
-        shiftList.innerHTML = '';
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.forEach((shift, index) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <strong>Date:</strong> ${shift.date}<br>
-            <strong>Start Time:</strong> ${shift.startTime}<br>
-            <strong>End Time:</strong> ${shift.endTime}<br>
-            <strong>Break Time:</strong> ${shift.breakTime} minutes<br>
-            <strong>Hours Worked:</strong> ${shift.hoursWorked}
-          `;
-          shiftList.appendChild(li);
-        });
+  // Month names for formatting
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-        // Display weekly earnings
-        displayWeeklyEarnings(userShifts);
+  // Function to calculate week ending date (always Saturday)
+  function getWeekEndingDate(dateStr) {
+    const date = new Date(dateStr);
+    const day = date.getDay(); // Get day of the week (0 = Sunday, 6 = Saturday)
+    const daysUntilSaturday = 6 - day; // Days left to Saturday
+    date.setDate(date.getDate() + daysUntilSaturday); // Move to Saturday
+    return `Week Ending ${date.getDate()}/${monthNames[date.getMonth()]}/${String(date.getFullYear()).slice(-2)}`;
+  }
+
+  // Function to update weekly shifts
+  function displayWeeklyEarnings() {
+    weekList.innerHTML = '';
+
+    const weeks = {};
+    shifts.forEach(shift => {
+      const weekEnding = getWeekEndingDate(shift.date);
+      if (!weeks[weekEnding]) {
+        weeks[weekEnding] = [];
       }
-
-      // Function to calculate hours worked
-      function calculateHoursWorked(startTime, endTime, breakTime) {
-        const start = new Date(`1970-01-01 ${startTime}`);
-        const end = new Date(`1970-01-01 ${endTime}`);
-        let diff = (end - start) / 1000 / 60; // Difference in minutes
-        diff -= breakTime; // Subtract break time
-        const hours = Math.floor(diff / 60);
-        const minutes = diff % 60;
-        return `${hours} hours and ${minutes} minutes`;
-      }
-
-      // Function to calculate pay rate
-      function getPayRate(date, startTime) {
-        const dayOfWeek = new Date(date).getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const startHour = parseInt(startTime.split(':')[0]);
-        const isEarlyMorningOrNight = startHour >= 18 || startHour < 5;
-
-        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Weekdays (Monday to Friday)
-          return isEarlyMorningOrNight ? 39.76 : 32.07;
-        } else if (dayOfWeek === 6) { // Saturday
-          return isEarlyMorningOrNight ? 44.89 : 38.48;
-        } else { // Sunday
-          return isEarlyMorningOrNight ? 51.31 : 44.89;
-        }
-      }
-
-      // Function to calculate tax
-      function calculateTax(income) {
-        if (income <= 18200) return 0;
-        else if (income <= 45000) return (income - 18200) * 0.16;
-        else if (income <= 135000) return 4288 + (income - 45000) * 0.3;
-        else if (income <= 190000) return 31288 + (income - 135000) * 0.37;
-        else return 51638 + (income - 190000) * 0.45;
-      }
-
-      // Function to display weekly earnings
-      function displayWeeklyEarnings(shifts) {
-        weekList.innerHTML = '';
-
-        // Group shifts by week
-        const weeks = {};
-        shifts.forEach(shift => {
-          const date = new Date(shift.date);
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - date.getDay()); // Start of the week (Sunday)
-          const weekKey = `Week ${weekStart.getDate()}/${weekStart.getMonth() + 1}/${String(weekStart.getFullYear()).slice(-2)}`;
-
-          if (!weeks[weekKey]) {
-            weeks[weekKey] = [];
-          }
-          weeks[weekKey].push(shift);
-        });
-
-        // Display each week's earnings
-        for (const [weekName, weekShifts] of Object.entries(weeks)) {
-          const weekDiv = document.createElement('div');
-          weekDiv.classList.add('week-summary');
-
-          const weekHeader = document.createElement('h3');
-          weekHeader.textContent = weekName;
-          weekHeader.addEventListener('click', () => {
-            const details = weekDiv.querySelector('.week-details');
-            details.classList.toggle('hidden');
-          });
-
-          const weekDetails = document.createElement('div');
-          weekDetails.classList.add('week-details', 'hidden');
-
-          let totalEarnings = 0;
-          weekShifts.forEach(shift => {
-            const startTime = shift.startTime;
-            const endTime = shift.endTime;
-            const breakTime = shift.breakTime;
-            const hoursWorked = calculateHoursWorked(startTime, endTime, breakTime);
-            const payRate = getPayRate(shift.date, startTime);
-            const earnings = (parseFloat(hoursWorked.split(' ')[0]) * payRate).toFixed(2);
-            totalEarnings += parseFloat(earnings);
-
-            const shiftDiv = document.createElement('div');
-            shiftDiv.innerHTML = `
-              <strong>Date:</strong> ${shift.date}<br>
-              <strong>Earnings:</strong> $${earnings}
-            `;
-            weekDetails.appendChild(shiftDiv);
-          });
-
-          const tax = calculateTax(totalEarnings);
-          const netEarnings = totalEarnings - tax;
-
-          const summaryDiv = document.createElement('div');
-          summaryDiv.innerHTML = `
-            <strong>Total Earnings:</strong> $${totalEarnings.toFixed(2)}<br>
-            <strong>Tax:</strong> $${tax.toFixed(2)}<br>
-            <strong>Net Earnings:</strong> $${netEarnings.toFixed(2)}
-          `;
-          weekDetails.appendChild(summaryDiv);
-
-          weekDiv.appendChild(weekHeader);
-          weekDiv.appendChild(weekDetails);
-          weekList.appendChild(weekDiv);
-        }
-      }
-
-      // Switch to Signup Form
-      switchToSignup.addEventListener('click', () => {
-        loginContainer.classList.add('hidden');
-        signupContainer.classList.remove('hidden');
-      });
-
-      // Switch to Login Form
-      switchToLogin.addEventListener('click', () => {
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      // Signup form submission
-      signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const newUsername = document.getElementById('newUsername').value;
-        const newPassword = document.getElementById('newPassword').value;
-
-        // Check if username already exists
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.some(u => u.username === newUsername)) {
-          alert('Username already exists. Please choose another.');
-          return;
-        }
-
-        // Save new user
-        users.push({ username: newUsername, password: newPassword });
-        localStorage.setItem('users', JSON.stringify(users));
-
-        alert('Signup successful! Please login.');
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      // Login form submission
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (user) {
-          currentUser = username;
-          loginContainer.classList.add('hidden');
-          shiftContainer.classList.remove('hidden');
-          displayShifts();
-        } else {
-          alert('Invalid username or password');
-        }
-      });
-
-      // Shift form submission
-      shiftForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const date = document.getElementById('date').value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const startAmPm = document.getElementById('startAmPm').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        const endAmPm = document.getElementById('endAmPm').value;
-        const breakTime = parseInt(document.getElementById('breakTime').value);
-
-        const startTime = `${startHour}:${startMinute} ${startAmPm}`;
-        const endTime = `${endHour}:${endMinute} ${endAmPm}`;
-
-        // Calculate hours worked
-        const hoursWorked = calculateHoursWorked(startTime, endTime, breakTime);
-
-        const newShift = {
-          date,
-          startTime,
-          endTime,
-          breakTime,
-          hoursWorked,
-        };
-
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.push(newShift);
-        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
-
-        displayShifts();
-        shiftForm.reset();
-      });
+      weeks[weekEnding].push(shift);
     });
+
+    for (const [weekName, weekShifts] of Object.entries(weeks)) {
+      const weekDiv = document.createElement('div');
+      weekDiv.classList.add('week-summary');
+
+      const weekHeader = document.createElement('h3');
+      weekHeader.textContent = weekName;
+      weekHeader.addEventListener('click', () => {
+        const details = weekDiv.querySelector('.week-details');
+        details.classList.toggle('hidden');
+      });
+
+      const weekDetails = document.createElement('div');
+      weekDetails.classList.add('week-details', 'hidden');
+
+      weekShifts.forEach(shift => {
+        const shiftItem = document.createElement('p');
+        shiftItem.textContent = `Shift: ${shift.date}, ${shift.startTime} - ${shift.endTime}, Break: ${shift.breakTime} min`;
+        weekDetails.appendChild(shiftItem);
+      });
+
+      weekDiv.appendChild(weekHeader);
+      weekDiv.appendChild(weekDetails);
+      weekList.appendChild(weekDiv);
+    }
+  }
+
+  // Function to add a shift
+  shiftForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const date = document.getElementById('date').value;
+    const startTime = document.getElementById('startHour').value + ':' +
+                      document.getElementById('startMinute').value + ' ' +
+                      document.getElementById('startAmPm').value;
+    const endTime = document.getElementById('endHour').value + ':' +
+                    document.getElementById('endMinute').value + ' ' +
+                    document.getElementById('endAmPm').value;
+    const breakTime = document.getElementById('breakTime').value;
+
+    if (!date) return;
+
+    shifts.push({ date, startTime, endTime, breakTime });
+
+    displayWeeklyEarnings();
+
+    // Scroll back up to the date selection
+    shiftForm.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    shiftForm.reset();
+  });
+});
   </script>
 </body>
 </html>
