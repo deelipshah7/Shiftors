@@ -1,213 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Keep all previous styles -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Shift Saver</title>
   <style>
-    /* Previous styles remain the same */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-top: 10px;
+    }
+
+    input, select {
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .time-selector {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f8f9fa;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .switch-form {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .switch-form a {
+      color: #28a745;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
     .week-item {
       margin-bottom: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       padding: 10px;
     }
+
     .week-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      padding: 10px;
+      background-color: #f8f9fa;
     }
+
+    .week-details {
+      margin-top: 10px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+
     .shift-actions {
       margin-top: 5px;
     }
+
     .edit-btn {
       background-color: #ffc107;
       margin-right: 5px;
     }
+
     .delete-btn {
       background-color: #dc3545;
-    }
-    .hidden {
-      display: none;
     }
   </style>
 </head>
 <body>
-  <!-- Previous HTML structure remains the same until weeklySummary div -->
-  <div id="weeklySummary"></div>
+  <div class="container" id="loginContainer">
+    <h1>Login</h1>
+    <form id="loginForm">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+
+      <button type="submit">Login</button>
+    </form>
+    <div class="switch-form">
+      Don't have an account? <a id="switchToSignup">Sign Up</a>
+    </div>
+  </div>
+
+  <div class="container hidden" id="signupContainer">
+    <h1>Sign Up</h1>
+    <form id="signupForm">
+      <label for="newUsername">Username:</label>
+      <input type="text" id="newUsername" required>
+
+      <label for="newPassword">Password:</label>
+      <input type="password" id="newPassword" required>
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="switch-form">
+      Already have an account? <a id="switchToLogin">Login</a>
+    </div>
+  </div>
+
+  <div class="container hidden" id="shiftContainer">
+    <h1>Work Shift Saver</h1>
+    <form id="shiftForm">
+      <label for="date">Date:</label>
+      <input type="date" id="date" required>
+
+      <label for="startTime">Start Time:</label>
+      <div class="time-selector">
+        <select id="startHour" required>
+          <option value="01">01</option>
+          <option value="02">02</option>
+          <option value="03">03</option>
+          <option value="04">04</option>
+          <option value="05">05</option>
+          <option value="06">06</option>
+          <option value="07">07</option>
+          <option value="08">08</option>
+          <option value="09">09</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+        <select id="startMinute" required>
+          <option value="00">00</option>
+          <option value="15">15</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+        </select>
+        <select id="startAmPm" required>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+
+      <label for="endTime">End Time:</label>
+      <div class="time-selector">
+        <select id="endHour" required>
+          <option value="01">01</option>
+          <option value="02">02</option>
+          <option value="03">03</option>
+          <option value="04">04</option>
+          <option value="05">05</option>
+          <option value="06">06</option>
+          <option value="07">07</option>
+          <option value="08">08</option>
+          <option value="09">09</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+        <select id="endMinute" required>
+          <option value="00">00</option>
+          <option value="15">15</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+        </select>
+        <select id="endAmPm" required>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+
+      <label for="breakTime">Break Time:</label>
+      <select id="breakTime" required>
+        <option value="0">0 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="45">45 minutes</option>
+      </select>
+
+      <button type="submit">Save Shift</button>
+    </form>
+
+    <h2>Saved Shifts</h2>
+    <div id="weeklySummary"></div>
+  </div>
 
   <script>
-    // Previous code remains the same until displayWeeklySummary function
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginContainer = document.getElementById('loginContainer');
+      const signupContainer = document.getElementById('signupContainer');
+      const shiftContainer = document.getElementById('shiftContainer');
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const shiftForm = document.getElementById('shiftForm');
+      const weeklySummary = document.getElementById('weeklySummary');
+      const switchToSignup = document.getElementById('switchToSignup');
+      const switchToLogin = document.getElementById('switchToLogin');
 
-    function displayWeeklySummary(shifts) {
-      weeklySummary.innerHTML = '<h2>Weekly Summary</h2>';
-      const weeks = groupShiftsByWeek(shifts);
-      const sortedWeeks = sortWeeks(weeks);
+      let currentUser = null;
 
-      sortedWeeks.forEach(week => {
-        const weekElement = createWeekElement(week);
-        weeklySummary.appendChild(weekElement);
-      });
-    }
+      // Function to display shifts
+      function displayShifts() {
+        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        weeklySummary.innerHTML = '<h2>Weekly Summary</h2>';
+        const weeks = groupShiftsByWeek(userShifts);
+        const sortedWeeks = sortWeeks(weeks);
 
-    function groupShiftsByWeek(shifts) {
-      const weeks = {};
-      shifts.forEach(shift => {
-        const date = new Date(shift.date);
-        const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay());
-        const weekKey = weekStart.toISOString().split('T')[0];
-        
-        if (!weeks[weekKey]) {
-          weeks[weekKey] = {
-            startDate: weekStart,
-            shifts: [],
-            gross: 0,
-            tax: 0,
-            net: 0
-          };
-        }
-        
-        const [hours, minutes] = shift.hoursWorked.split(' hours and ');
-        const totalHours = parseFloat(hours) + parseFloat(minutes) / 60;
-        const payRate = getPayRate(shift.date, shift.startTime);
-        const earnings = totalHours * payRate;
-        
-        weeks[weekKey].shifts.push({...shift, earnings});
-        weeks[weekKey].gross += earnings;
-      });
-
-      // Calculate tax and net for each week
-      Object.values(weeks).forEach(week => {
-        week.tax = calculateTax(week.gross);
-        week.net = week.gross - week.tax;
-      });
-
-      return Object.values(weeks);
-    }
-
-    function sortWeeks(weeks) {
-      return weeks.sort((a, b) => b.startDate - a.startDate);
-    }
-
-    function createWeekElement(week) {
-      const weekElement = document.createElement('div');
-      weekElement.className = 'week-item';
-      
-      const weekStart = week.startDate;
-      const weekName = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
-
-      weekElement.innerHTML = `
-        <div class="week-header">
-          <strong>${weekName}</strong>
-          <span>$${week.net.toFixed(2)}</span>
-        </div>
-        <div class="week-details hidden"></div>
-      `;
-
-      const detailsDiv = weekElement.querySelector('.week-details');
-      const headerDiv = weekElement.querySelector('.week-header');
-
-      headerDiv.addEventListener('click', () => {
-        document.querySelectorAll('.week-details').forEach(d => d.classList.add('hidden'));
-        detailsDiv.classList.toggle('hidden');
-      });
-
-      // Add week summary
-      const summary = document.createElement('div');
-      summary.className = 'week-summary';
-      summary.innerHTML = `
-        Gross Pay: $${week.gross.toFixed(2)}<br>
-        Tax: $${week.tax.toFixed(2)}<br>
-        Net Pay: $${week.net.toFixed(2)}
-      `;
-      detailsDiv.appendChild(summary);
-
-      // Add shifts list
-      const shiftsList = document.createElement('ul');
-      week.shifts.forEach((shift, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <strong>${shift.date}</strong><br>
-          ${shift.startTime} - ${shift.endTime}<br>
-          Earnings: $${shift.earnings.toFixed(2)}
-          <div class="shift-actions">
-            <button class="edit-btn" data-index="${index}">Edit</button>
-            <button class="delete-btn" data-index="${index}">Delete</button>
-          </div>
-        `;
-        shiftsList.appendChild(li);
-      });
-      detailsDiv.appendChild(shiftsList);
-
-      // Add event listeners for edit/delete buttons
-      detailsDiv.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => editShift(week, e.target.dataset.index));
-      });
-      
-      detailsDiv.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => deleteShift(week, e.target.dataset.index));
-      });
-
-      return weekElement;
-    }
-
-    function editShift(week, index) {
-      const shift = week.shifts[index];
-      const [date, startTime, ampm] = shift.date.split('T')[0], shift.startTime.split(' ');
-      const [hour, minute] = startTime.split(':');
-      
-      // Populate form fields
-      document.getElementById('date').value = shift.date;
-      document.getElementById('startHour').value = hour.padStart(2, '0');
-      document.getElementById('startMinute').value = minute;
-      document.getElementById('startAmPm').value = ampm;
-      // Similar for end time...
-      document.getElementById('breakTime').value = shift.breakTime;
-
-      // Update form to edit mode
-      shiftForm.dataset.editing = JSON.stringify({week: week.startDate.toISOString(), index});
-      shiftForm.querySelector('button').textContent = 'Update Shift';
-    }
-
-    function deleteShift(week, index) {
-      const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-      const updatedShifts = userShifts.filter(s => {
-        const shiftWeek = new Date(s.date);
-        shiftWeek.setDate(shiftWeek.getDate() - shiftWeek.getDay());
-        return shiftWeek.getTime() !== week.startDate.getTime() || 
-               !week.shifts[index].date.includes(s.date);
-      });
-      
-      localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(updatedShifts));
-      displayShifts();
-    }
-
-    // Update shift form submission handler
-    shiftForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      // Existing code to collect shift data...
-
-      const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-      
-      if (shiftForm.dataset.editing) {
-        // Handle edit
-        const {week, index} = JSON.parse(shiftForm.dataset.editing);
-        delete shiftForm.dataset.editing;
-        // Find and update the shift
-        // (Implementation details depend on your data structure)
-      } else {
-        // Add new shift
-        userShifts.push(newShift);
+        sortedWeeks.forEach(week => {
+          const weekElement = createWeekElement(week);
+          weeklySummary.appendChild(weekElement);
+        });
       }
 
-      localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
-      displayShifts();
-      shiftForm.reset();
-      shiftForm.querySelector('button').textContent = 'Save Shift';
-    });
+      // Function to group shifts by week
+      function groupShiftsByWeek(shifts) {
+        const weeks = {};
+        shifts.forEach(shift => {
+          const date = new Date(shift.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const weekKey = weekStart.toISOString().split('T')[0];
 
-    // Rest of the code remains the same
+          if (!weeks[weekKey]) {
+            weeks[weekKey] = {
+              startDate: weekStart,
+              shifts: [],
+              gross: 0,
+              tax: 0,
+              net: 0
+            };
+          }
+
+          const [hours, minutes] = shift.hoursWorked.split(' hours and ');
+          const totalHours = parseFloat(hours) + parseFloat(minutes.replace(' minutes', '')) / 60;
+          const payRate = getPayRate(shift.date, shift.startTime);
+          const earnings = totalHours * payRate;
+
+          weeks[weekKey].shifts.push({ ...shift, earnings });
+          weeks[weekKey].gross += earnings;
+        });
+
+        // Calculate tax and net for each week
+        Object.values(weeks).forEach(week => {
+          week.tax = calculateTax(week.gross);
+          week.net = week.gross - week.tax;
+        });
+
+        return Object.values(weeks);
+      }
+
+      // Function to sort weeks by date
+      function sortWeeks(weeks) {
+        return weeks.sort((a, b) => b.startDate - a.startDate);
+      }
+
+      // Function to create a week element
+      function createWeekElement(week) {
+        const weekElement = document.createElement('div');
+        weekElement.className = 'week-item';
+
+        const weekStart = week.startDate;
+        const weekName = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
+
+        weekElement.innerHTML = `
+          <div class="week-header">
+            <strong>${weekName}</strong>
+            <span>Net: $${week.net.toFixed(2)}</span>
+          </div>
+          <div class="week-details hidden"></div>
+        `;
+
+        const detailsDiv = weekElement.querySelector('.week-details');
+        const headerDiv = weekElement.querySelector('.week-header');
+
+        headerDiv.addEventListener('click', () => {
+          document.querySelectorAll('.week-details').forEach(d => {
+            if (d !== detailsDiv) d.classList.add('hidden');
+          });
+          detailsDiv.classList.toggle('hidden');
+        });
+
+        // Add week summary
+        const summary = document.createElement('div');
+        summary.className = 'week-summary';
+        summary.innerHTML = `
+          <p>Gross Pay: $${week.gross.toFixed(2)}</p>
+          <p>Tax: $${week.tax.toFixed(2)}</p>
+          <p>Net Pay: $${week.net.toFixed(2)}</p>
+          <h3>Shifts:</h3>
+        `;
+        detailsDiv.appendChild(summary);
+
+        // Add shifts list
+        const shiftsList = document.createElement('ul');
+        week.shifts.forEach((shift, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <div>
+              <strong>${shift.date}</strong><br>
+              ${shift.startTime} - ${shift.endTime}<br>
+              Earnings: $${shift.earnings.toFixed(2)}
+              <div class="shift-actions">
+                <button class="edit-btn" data-id="${shift.date}-${shift.startTime}">Edit</button>
+                <button class="delete-btn" data-id="${shift.date}-${shift.startTime}">Delete</button>
+              </div>
+            </div>
+          `;
+          shiftsList.appendChild(li);
+        });
+        detailsDiv.appendChild(shiftsList);
+
+        // Add event listeners for buttons
+        detailsDiv.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const shiftId = e.target.dataset.id;
+            deleteShift(shiftId);
+          });
+        });
+
+        detailsDiv.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const shiftId = e.target.dataset.id;
+            editShift(shiftId);
+          });
+        });
+
+        return weekElement;
+      }
+
+      // Function to delete a shift
+      function deleteShift(shiftId) {
+        let userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        userShifts = userShifts.filter(shift => `${shift.date}-${shift.startTime}` !== shiftId);
+        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
+        displayShifts();
+      }
+
+      // Function to edit a shift
+      function editShift(shiftId) {
+        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        const shift = userShifts.find(s => `${s.date}-${s.startTime}` === shiftId);
+
+        if (shift) {
+          // Populate form fields
+          document.getElementById('date').value = shift.date;
+
+          const [startHour, startMinute, ampm] = shift.startTime.split(/:| /);
+          document.getElementById('startHour').value = startHour.padStart(2, '0');
+          document.getElementById('startMinute').value = startMinute;
+          document.getElementById('startAmPm').value = ampm;
+
+          const [endHour, endMinute, endAmPm] = shift.endTime.split(/:| /);
+          document.getElementById('endHour').value = endHour.padStart(2, '0');
+          document.getElementById('endMinute').value = endMinute;
+          document.getElementById('endAmPm').value = endAmp;
+
+          document.getElementById('breakTime').value = shift.breakTime;
+
+          // Set edit mode
+          shiftForm.dataset.editId = shiftId;
+          shiftForm.querySelector('button').textContent = 'Update Shift';
+        }
+      }
+
+      // Function to calculate pay rate
+      function getPayRate(date, startTime) {
+        const dayOfWeek = new Date(date).getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const [hour, minute, ampm] = startTime.split(/:| /);
+        const hour24 = ampm === 'PM' && hour !== '12' ? parseInt(hour) + 12 : parseInt(hour);
+
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Weekdays (Monday to Friday)
+          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
+            return 39.76;
+          } else { // Daytime shift
+            return 32.07;
+          }
+        } else if (dayOfWeek === 6) { // Saturday
+          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
+            return 44.89;
+          } else { // Daytime shift
+            return 38.48;
+          }
+        } else if (dayOfWeek === 0) { // Sunday
+          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
+            return 51.31;
+          } else { // Daytime shift
+            return 44.89;
+          }
+        }
+      }
+
+      // Function to calculate tax
+      function calculateTax(income) {
+        if (income <= 18200) {
+          return 0;
+        } else if (income <= 45000) {
+          return (income - 18200) * 0.16;
+        } else if (income <= 135000) {
+          return 4288 + (income - 45000) * 0.3;
+        } else if (income <= 190000) {
+          return 31288 + (income - 135000) * 0.37;
+        } else {
+          return 51638 + (income - 190000) * 0.45;
+        }
+      }
+
+      // Switch to Signup Form
+      switchToSignup.addEventListener('click', () => {
+        loginContainer.classList.add('hidden');
+        signupContainer.classList.remove('hidden');
+      });
+
+      // Switch to Login Form
+      switchToLogin.addEventListener('click', () => {
+        signupContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+      });
+
+      // Signup form submission
+      signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const newUsername = document.getElementById('newUsername').value;
+        const newPassword = document.getElementById('newPassword').value;
+
+        // Check if username already exists
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        if (users.some(u => u.username === newUsername)) {
+          alert('Username already exists. Please choose another.');
+          return;
+        }
+
+        // Save new user
+        users.push({ username: newUsername, password: newPassword });
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert('Signup successful! Please login.');
+        signupContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+      });
+
+      // Login form submission
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.username === username && u.password === password);
+
+if (user) {
+          currentUser = username;
+          loginContainer.classList.add('hidden');
+          shiftContainer.classList.remove('hidden');
+          displayShifts();
+        } else {
+          alert('Invalid username or password');
+        }
+      });
+
+      // Shift form submission
+      shiftForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+   const date = document.getElementById('date').value;
+        const startHour = document.getElementById('startHour').value;
+        const startMinute = document.getElementById('startMinute').value;
+        const startAmPm = document.getElementById('startAmPm').value;
+        const endHour = document.getElementById('endHour').value;
+        const endMinute = document.getElementById('endMinute').value;
+        const endAmPm = document.getElementById('endAmPm').value;
+        const breakTime = parseInt(document.getElementById('breakTime').value);
+
+        const startTime = `${startHour}:${startMinute} ${startAmPm}`;
+        const endTime = `${endHour}:${endMinute} ${endAmPm}`;
+
+        // Calculate hours worked
+        const hoursWorked = calculateHoursWorked(startTime, endTime, breakTime);
+ const newShift = {
+          date,
+          startTime,
+          endTime,
+          breakTime,
+          hoursWorked,
+        };
+
+        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        userShifts.push(newShift);
+        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
+
+        displayShifts();
+        shiftForm.reset();
+      });
+    });
   </script>
 </body>
 </html>
