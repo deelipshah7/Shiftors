@@ -44,12 +44,20 @@
             border: 1px solid #dadce0;
             border-radius: 8px;
             font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .time-group {
+        .time-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
+            align-items: center;
+        }
+
+        .time-group {
+            display: flex;
+            gap: 5px;
         }
 
         button {
@@ -165,60 +173,49 @@
             <label>Date:</label>
             <input type="date" id="shiftDate" required>
             
-            <div class="time-group">
+            <div class="time-row">
                 <div>
                     <label>Start Time</label>
-                    <select id="startHour">
-                        <option value="1">1</option><option value="2">2</option>
-                        <option value="3">3</option><option value="4">4</option>
-                        <option value="5">5</option><option value="6">6</option>
-                        <option value="7">7</option><option value="8">8</option>
-                        <option value="9">9</option><option value="10">10</option>
-                        <option value="11">11</option><option value="12">12</option>
-                    </select>
+                    <div class="time-group">
+                        <select id="startHour">
+                            <option value="1">1</option><option value="2">2</option>
+                            <option value="3">3</option><option value="4">4</option>
+                            <option value="5">5</option><option value="6">6</option>
+                            <option value="7">7</option><option value="8">8</option>
+                            <option value="9">9</option><option value="10">10</option>
+                            <option value="11">11</option><option value="12">12</option>
+                        </select>
+                        <select id="startMinute">
+                            <option value="00">00</option><option value="15">15</option>
+                            <option value="30">30</option><option value="45">45</option>
+                        </select>
+                        <select id="startAmPm">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label>Minute</label>
-                    <select id="startMinute">
-                        <option value="00">00</option><option value="15">15</option>
-                        <option value="30">30</option><option value="45">45</option>
-                    </select>
-                </div>
-                <div>
-                    <label>AM/PM</label>
-                    <select id="startAmPm">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
-                </div>
-            </div>
 
-            <!-- Similar time group for end time -->
-            <div class="time-group">
                 <div>
                     <label>End Time</label>
-                    <select id="endHour">
-                        <option value="1">1</option><option value="2">2</option>
-                        <option value="3">3</option><option value="4">4</option>
-                        <option value="5">5</option><option value="6">6</option>
-                        <option value="7">7</option><option value="8">8</option>
-                        <option value="9">9</option><option value="10">10</option>
-                        <option value="11">11</option><option value="12">12</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Minute</label>
-                    <select id="endMinute">
-                        <option value="00">00</option><option value="15">15</option>
-                        <option value="30">30</option><option value="45">45</option>
-                    </select>
-                </div>
-                <div>
-                    <label>AM/PM</label>
-                    <select id="endAmPm">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
+                    <div class="time-group">
+                        <select id="endHour">
+                            <option value="1">1</option><option value="2">2</option>
+                            <option value="3">3</option><option value="4">4</option>
+                            <option value="5">5</option><option value="6">6</option>
+                            <option value="7">7</option><option value="8">8</option>
+                            <option value="9">9</option><option value="10">10</option>
+                            <option value="11">11</option><option value="12">12</option>
+                        </select>
+                        <select id="endMinute">
+                            <option value="00">00</option><option value="15">15</option>
+                            <option value="30">30</option><option value="45">45</option>
+                        </select>
+                        <select id="endAmPm">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -251,18 +248,28 @@
             document.getElementById(sectionId).classList.remove('hidden');
         };
 
-        const calculateHours = (start, end, breakMins) => {
-            const diff = (end - start) / 1000 / 60;
-            return (diff - breakMins) / 60;
+        const convertTo24Hour = (time12) => {
+            const [time, period] = time12.split(' ');
+            let [hours, minutes] = time.split(':');
+            if (period === 'PM' && hours !== '12') hours = parseInt(hours) + 12;
+            if (period === 'AM' && hours === '12') hours = '00';
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
         };
 
-        const getPayRate = (date, startTime) => {
-            const d = new Date(date);
-            const hour = parseInt(startTime.split(':')[0]);
+        const calculateHours = (start24, end24, breakMins) => {
+            const start = new Date(`1970-01-01T${start24}:00`);
+            const end = new Date(`1970-01-01T${end24}:00`);
+            const diff = (end - start) / 1000 / 60; // minutes
+            return (diff - breakMins) / 60; // hours
+        };
+
+        const getPayRate = (dateString, start24) => {
+            const date = new Date(dateString);
+            const hour = parseInt(start24.split(':')[0]);
             const isNight = hour >= 18 || hour < 5;
             
-            if (d.getDay() === 0) return isNight ? 51.31 : 44.89; // Sunday
-            if (d.getDay() === 6) return isNight ? 44.89 : 38.48; // Saturday
+            if (date.getDay() === 0) return isNight ? 51.31 : 44.89; // Sunday
+            if (date.getDay() === 6) return isNight ? 44.89 : 38.48; // Saturday
             return isNight ? 39.76 : 32.07; // Weekdays
         };
 
@@ -270,13 +277,12 @@
         document.getElementById('loginForm').addEventListener('submit', e => {
             e.preventDefault();
             const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => 
-                u.username === document.getElementById('username').value &&
-                u.password === document.getElementById('password').value
-            );
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
             
+            const user = users.find(u => u.username === username && u.password === password);
             if (user) {
-                currentUser = user.username;
+                currentUser = username;
                 showSection('mainContainer');
                 loadShifts();
             } else {
@@ -314,6 +320,13 @@
                 break: parseInt(document.getElementById('breakTime').value)
             };
 
+            // Calculate hours and pay
+            const start24 = convertTo24Hour(newShift.start);
+            const end24 = convertTo24Hour(newShift.end);
+            const hours = calculateHours(start24, end24, newShift.break);
+            const payRate = getPayRate(newShift.date, start24);
+            newShift.earnings = hours * payRate;
+
             if (editingIndex !== null) {
                 shifts[editingIndex] = newShift;
                 editingIndex = null;
@@ -337,7 +350,7 @@
             shifts.forEach((shift, index) => {
                 const date = new Date(shift.date);
                 const weekStart = new Date(date);
-                weekStart.setDate(date.getDate() - date.getDay());
+                weekStart.setDate(date.getDate() - date.getDay()); // Sunday start
                 const weekKey = weekStart.toISOString().split('T')[0];
 
                 if (!weeks[weekKey]) {
@@ -347,15 +360,8 @@
                     };
                 }
 
-                // Calculate earnings
-                const start24 = convertTo24Hour(shift.start);
-                const end24 = convertTo24Hour(shift.end);
-                const hours = calculateHours(new Date(`1970-01-01T${start24}`), new Date(`1970-01-01T${end24}`), shift.break);
-                const payRate = getPayRate(shift.date, start24);
-                const earnings = hours * payRate;
-
-                weeks[weekKey].shifts.push({...shift, index, earnings});
-                weeks[weekKey].total += earnings;
+                weeks[weekKey].shifts.push({...shift, index});
+                weeks[weekKey].total += shift.earnings;
             });
 
             // Display weeks
@@ -396,7 +402,7 @@
                 const taxSection = document.createElement('div');
                 taxSection.className = 'tax-results';
                 taxSection.innerHTML = `
-                    <button class="primary-btn" onclick="calculateTax(this)">Calculate Tax</button>
+                    <button class="primary-btn" onclick="calculateTax(this, ${weekData.total})">Calculate Tax</button>
                     <div class="tax-details hidden">
                         <p>Annual Income: $<span class="annual">0.00</span></p>
                         <p>Annual Tax: $<span class="tax">0.00</span></p>
@@ -412,34 +418,37 @@
             });
         }
 
-        // Utility Functions
-        function convertTo24Hour(time12) {
-            const [time, period] = time12.split(' ');
-            let [hours, minutes] = time.split(':');
-            if (period === 'PM' && hours !== '12') hours = parseInt(hours) + 12;
-            if (period === 'AM' && hours === '12') hours = '00';
-            return `${hours.padStart(2, '0')}:${minutes}`;
-        }
-
+        // Shift Actions
         function editShift(index) {
             const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
             const shift = shifts[index];
             
-            // Convert time to 12-hour format
-            const [startHour, startMinute] = convertTo24Hour(shift.start).split(':');
-            const [endHour, endMinute] = convertTo24Hour(shift.end).split(':');
-            
+            // Convert to 12-hour format
+            const parseTime = (time24) => {
+                const [hours, minutes] = time24.split(':');
+                const hr = parseInt(hours);
+                return {
+                    hour: hr % 12 || 12,
+                    minute: minutes,
+                    period: hr >= 12 ? 'PM' : 'AM'
+                };
+            };
+
             document.getElementById('shiftDate').value = shift.date;
-            document.getElementById('startHour').value = startHour % 12 || 12;
-            document.getElementById('startMinute').value = startMinute;
-            document.getElementById('startAmPm').value = startHour >= 12 ? 'PM' : 'AM';
             
-            document.getElementById('endHour').value = endHour % 12 || 12;
-            document.getElementById('endMinute').value = endMinute;
-            document.getElementById('endAmPm').value = endHour >= 12 ? 'PM' : 'AM';
-            
+            const startTime = parseTime(convertTo24Hour(shift.start));
+            document.getElementById('startHour').value = startTime.hour;
+            document.getElementById('startMinute').value = startTime.minute;
+            document.getElementById('startAmPm').value = startTime.period;
+
+            const endTime = parseTime(convertTo24Hour(shift.end));
+            document.getElementById('endHour').value = endTime.hour;
+            document.getElementById('endMinute').value = endTime.minute;
+            document.getElementById('endAmPm').value = endTime.period;
+
             document.getElementById('breakTime').value = shift.break;
             editingIndex = index;
+            window.scrollTo(0, 0);
         }
 
         function deleteShift(index) {
@@ -449,9 +458,8 @@
             loadShifts();
         }
 
-        function calculateTax(button) {
-            const weekEarnings = parseFloat(button.parentElement.parentElement.querySelector('.week-header div:last-child').textContent.slice(1));
-            const annualIncome = weekEarnings * 52;
+        function calculateTax(button, weeklyEarnings) {
+            const annualIncome = weeklyEarnings * 52;
             let tax = 0;
 
             if (annualIncome > 190000) tax = 51638 + (annualIncome - 190000) * 0.45;
@@ -460,7 +468,7 @@
             else if (annualIncome > 18200) tax = (annualIncome - 18200) * 0.16;
 
             const weeklyTax = tax / 52;
-            const taxRate = (weeklyTax / weekEarnings) * 100;
+            const taxRate = (weeklyTax / weeklyEarnings) * 100;
 
             const details = button.nextElementSibling;
             details.querySelector('.annual').textContent = annualIncome.toFixed(2);
