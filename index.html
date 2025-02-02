@@ -1,550 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Shift Saver</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 400px;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-    }
-
-    label {
-      margin-top: 10px;
-    }
-
-    input, select {
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .time-selector {
-      display: flex;
-      gap: 10px;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    li {
-      background-color: #f8f9fa;
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .switch-form {
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    .switch-form a {
-      color: #28a745;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-
-    .week-item {
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 10px;
-    }
-
-    .week-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      padding: 10px;
-      background-color: #f8f9fa;
-    }
-
-    .week-details {
-      margin-top: 10px;
-      padding: 10px;
-      border-top: 1px solid #ddd;
-    }
-
-    .shift-actions {
-      margin-top: 5px;
-    }
-
-    .edit-btn {
-      background-color: #ffc107;
-      margin-right: 5px;
-    }
-
-    .delete-btn {
-      background-color: #dc3545;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+        }
+        .hidden { display: none; }
+        .week-container {
+            margin-bottom: 10px;
+            border: 1px solid black;
+            padding: 10px;
+        }
+        .week-header {
+            background: #ccc;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .shift-details {
+            margin-top: 10px;
+            padding: 5px;
+        }
+        .delete-btn, .edit-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-  <div class="container" id="loginContainer">
-    <h1>Login</h1>
-    <form id="loginForm">
-      <label for="username">Username:</label>
-      <input type="text" id="username" required>
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" required>
-
-      <button type="submit">Login</button>
-    </form>
-    <div class="switch-form">
-      Don't have an account? <a id="switchToSignup">Sign Up</a>
+    <!-- Login / Signup Section -->
+    <div id="authSection">
+        <h2>Login / Signup</h2>
+        <input type="text" id="username" placeholder="Enter username">
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="signup()">Sign Up</button>
+        <button onclick="login()">Login</button>
+        <p id="authMessage"></p>
     </div>
-  </div>
 
-  <div class="container hidden" id="signupContainer">
-    <h1>Sign Up</h1>
-    <form id="signupForm">
-      <label for="newUsername">Username:</label>
-      <input type="text" id="newUsername" required>
-
-      <label for="newPassword">Password:</label>
-      <input type="password" id="newPassword" required>
-
-      <button type="submit">Sign Up</button>
-    </form>
-    <div class="switch-form">
-      Already have an account? <a id="switchToLogin">Login</a>
+    <!-- Main Content (After Login) -->
+    <div id="mainContent" class="hidden">
+        <h2>Shift Management</h2>
+        <button onclick="showShiftForm()">Add Shift</button>
+        <div id="shiftForm" class="hidden">
+            <select id="day">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+            <input type="time" id="startTime">
+            <input type="time" id="endTime">
+            <button onclick="addShift()">Add</button>
+        </div>
+        <h3>Your Shifts:</h3>
+        <div id="shiftContainer"></div>
     </div>
-  </div>
 
-  <div class="container hidden" id="shiftContainer">
-    <h1>Work Shift Saver</h1>
-    <form id="shiftForm">
-      <label for="date">Date:</label>
-      <input type="date" id="date" required>
+    <script>
+        let users = {};
+        let loggedInUser = null;
+        let shifts = {}; // Stores shifts by week
 
-      <label for="startTime">Start Time:</label>
-      <div class="time-selector">
-        <select id="startHour" required>
-          <option value="01">01</option>
-          <option value="02">02</option>
-          <option value="03">03</option>
-          <option value="04">04</option>
-          <option value="05">05</option>
-          <option value="06">06</option>
-          <option value="07">07</option>
-          <option value="08">08</option>
-          <option value="09">09</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-        <select id="startMinute" required>
-          <option value="00">00</option>
-          <option value="15">15</option>
-          <option value="30">30</option>
-          <option value="45">45</option>
-        </select>
-        <select id="startAmPm" required>
-          <option value="AM">AM</option>
-          <option value="PM">PM</option>
-        </select>
-      </div>
+        function signup() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
 
-      <label for="endTime">End Time:</label>
-      <div class="time-selector">
-        <select id="endHour" required>
-          <option value="01">01</option>
-          <option value="02">02</option>
-          <option value="03">03</option>
-          <option value="04">04</option>
-          <option value="05">05</option>
-          <option value="06">06</option>
-          <option value="07">07</option>
-          <option value="08">08</option>
-          <option value="09">09</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-        <select id="endMinute" required>
-          <option value="00">00</option>
-          <option value="15">15</option>
-          <option value="30">30</option>
-          <option value="45">45</option>
-        </select>
-        <select id="endAmPm" required>
-          <option value="AM">AM</option>
-          <option value="PM">PM</option>
-        </select>
-      </div>
-
-      <label for="breakTime">Break Time:</label>
-      <select id="breakTime" required>
-        <option value="0">0 minutes</option>
-        <option value="15">15 minutes</option>
-        <option value="30">30 minutes</option>
-        <option value="45">45 minutes</option>
-      </select>
-
-      <button type="submit">Save Shift</button>
-    </form>
-
-    <h2>Saved Shifts</h2>
-    <div id="weeklySummary"></div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const loginContainer = document.getElementById('loginContainer');
-      const signupContainer = document.getElementById('signupContainer');
-      const shiftContainer = document.getElementById('shiftContainer');
-      const loginForm = document.getElementById('loginForm');
-      const signupForm = document.getElementById('signupForm');
-      const shiftForm = document.getElementById('shiftForm');
-      const weeklySummary = document.getElementById('weeklySummary');
-      const switchToSignup = document.getElementById('switchToSignup');
-      const switchToLogin = document.getElementById('switchToLogin');
-
-      let currentUser = null;
-
-      // Function to display shifts
-      function displayShifts() {
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        weeklySummary.innerHTML = '<h2>Weekly Summary</h2>';
-        const weeks = groupShiftsByWeek(userShifts);
-        const sortedWeeks = sortWeeks(weeks);
-
-        sortedWeeks.forEach(week => {
-          const weekElement = createWeekElement(week);
-          weeklySummary.appendChild(weekElement);
-        });
-      }
-
-      // Function to group shifts by week
-      function groupShiftsByWeek(shifts) {
-        const weeks = {};
-        shifts.forEach(shift => {
-          const date = new Date(shift.date);
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - date.getDay());
-          const weekKey = weekStart.toISOString().split('T')[0];
-
-          if (!weeks[weekKey]) {
-            weeks[weekKey] = {
-              startDate: weekStart,
-              shifts: [],
-              gross: 0,
-              tax: 0,
-              net: 0
-            };
-          }
-
-          const [hours, minutes] = shift.hoursWorked.split(' hours and ');
-          const totalHours = parseFloat(hours) + parseFloat(minutes.replace(' minutes', '')) / 60;
-          const payRate = getPayRate(shift.date, shift.startTime);
-          const earnings = totalHours * payRate;
-
-          weeks[weekKey].shifts.push({ ...shift, earnings });
-          weeks[weekKey].gross += earnings;
-        });
-
-        // Calculate tax and net for each week
-        Object.values(weeks).forEach(week => {
-          week.tax = calculateTax(week.gross);
-          week.net = week.gross - week.tax;
-        });
-
-        return Object.values(weeks);
-      }
-
-      // Function to sort weeks by date
-      function sortWeeks(weeks) {
-        return weeks.sort((a, b) => b.startDate - a.startDate);
-      }
-
-      // Function to create a week element
-      function createWeekElement(week) {
-        const weekElement = document.createElement('div');
-        weekElement.className = 'week-item';
-
-        const weekStart = week.startDate;
-        const weekName = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
-
-        weekElement.innerHTML = `
-          <div class="week-header">
-            <strong>${weekName}</strong>
-            <span>Net: $${week.net.toFixed(2)}</span>
-          </div>
-          <div class="week-details hidden"></div>
-        `;
-
-        const detailsDiv = weekElement.querySelector('.week-details');
-        const headerDiv = weekElement.querySelector('.week-header');
-
-        headerDiv.addEventListener('click', () => {
-          document.querySelectorAll('.week-details').forEach(d => {
-            if (d !== detailsDiv) d.classList.add('hidden');
-          });
-          detailsDiv.classList.toggle('hidden');
-        });
-
-        // Add week summary
-        const summary = document.createElement('div');
-        summary.className = 'week-summary';
-        summary.innerHTML = `
-          <p>Gross Pay: $${week.gross.toFixed(2)}</p>
-          <p>Tax: $${week.tax.toFixed(2)}</p>
-          <p>Net Pay: $${week.net.toFixed(2)}</p>
-          <h3>Shifts:</h3>
-        `;
-        detailsDiv.appendChild(summary);
-
-        // Add shifts list
-        const shiftsList = document.createElement('ul');
-        week.shifts.forEach((shift, index) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <div>
-              <strong>${shift.date}</strong><br>
-              ${shift.startTime} - ${shift.endTime}<br>
-              Earnings: $${shift.earnings.toFixed(2)}
-              <div class="shift-actions">
-                <button class="edit-btn" data-id="${shift.date}-${shift.startTime}">Edit</button>
-                <button class="delete-btn" data-id="${shift.date}-${shift.startTime}">Delete</button>
-              </div>
-            </div>
-          `;
-          shiftsList.appendChild(li);
-        });
-        detailsDiv.appendChild(shiftsList);
-
-        // Add event listeners for buttons
-        detailsDiv.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const shiftId = e.target.dataset.id;
-            deleteShift(shiftId);
-          });
-        });
-
-        detailsDiv.querySelectorAll('.edit-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const shiftId = e.target.dataset.id;
-            editShift(shiftId);
-          });
-        });
-
-        return weekElement;
-      }
-
-      // Function to delete a shift
-      function deleteShift(shiftId) {
-        let userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts = userShifts.filter(shift => `${shift.date}-${shift.startTime}` !== shiftId);
-        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
-        displayShifts();
-      }
-
-      // Function to edit a shift
-      function editShift(shiftId) {
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        const shift = userShifts.find(s => `${s.date}-${s.startTime}` === shiftId);
-
-        if (shift) {
-          // Populate form fields
-          document.getElementById('date').value = shift.date;
-
-          const [startHour, startMinute, ampm] = shift.startTime.split(/:| /);
-          document.getElementById('startHour').value = startHour.padStart(2, '0');
-          document.getElementById('startMinute').value = startMinute;
-          document.getElementById('startAmPm').value = ampm;
-
-          const [endHour, endMinute, endAmPm] = shift.endTime.split(/:| /);
-          document.getElementById('endHour').value = endHour.padStart(2, '0');
-          document.getElementById('endMinute').value = endMinute;
-          document.getElementById('endAmPm').value = endAmp;
-
-          document.getElementById('breakTime').value = shift.breakTime;
-
-          // Set edit mode
-          shiftForm.dataset.editId = shiftId;
-          shiftForm.querySelector('button').textContent = 'Update Shift';
-        }
-      }
-
-      // Function to calculate pay rate
-      function getPayRate(date, startTime) {
-        const dayOfWeek = new Date(date).getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const [hour, minute, ampm] = startTime.split(/:| /);
-        const hour24 = ampm === 'PM' && hour !== '12' ? parseInt(hour) + 12 : parseInt(hour);
-
-        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Weekdays (Monday to Friday)
-          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
-            return 39.76;
-          } else { // Daytime shift
-            return 32.07;
-          }
-        } else if (dayOfWeek === 6) { // Saturday
-          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
-            return 44.89;
-          } else { // Daytime shift
-            return 38.48;
-          }
-        } else if (dayOfWeek === 0) { // Sunday
-          if (hour24 >= 18 || hour24 < 4) { // Early morning/night shift
-            return 51.31;
-          } else { // Daytime shift
-            return 44.89;
-          }
-        }
-      }
-
-      // Function to calculate tax
-      function calculateTax(income) {
-        if (income <= 18200) {
-          return 0;
-        } else if (income <= 45000) {
-          return (income - 18200) * 0.16;
-        } else if (income <= 135000) {
-          return 4288 + (income - 45000) * 0.3;
-        } else if (income <= 190000) {
-          return 31288 + (income - 135000) * 0.37;
-        } else {
-          return 51638 + (income - 190000) * 0.45;
-        }
-      }
-
-      // Switch to Signup Form
-      switchToSignup.addEventListener('click', () => {
-        loginContainer.classList.add('hidden');
-        signupContainer.classList.remove('hidden');
-      });
-
-      // Switch to Login Form
-      switchToLogin.addEventListener('click', () => {
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      // Signup form submission
-      signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const newUsername = document.getElementById('newUsername').value;
-        const newPassword = document.getElementById('newPassword').value;
-
-        // Check if username already exists
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.some(u => u.username === newUsername)) {
-          alert('Username already exists. Please choose another.');
-          return;
+            if (users[username]) {
+                document.getElementById("authMessage").innerText = "Username already registered. Try another.";
+            } else {
+                users[username] = password;
+                document.getElementById("authMessage").innerText = "Sign-up successful! Please log in.";
+            }
         }
 
-        // Save new user
-        users.push({ username: newUsername, password: newPassword });
-        localStorage.setItem('users', JSON.stringify(users));
+        function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
 
-        alert('Signup successful! Please login.');
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      // Login form submission
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.username === username && u.password === password);
-
-if (user) {
-          currentUser = username;
-          loginContainer.classList.add('hidden');
-          shiftContainer.classList.remove('hidden');
-          displayShifts();
-        } else {
-          alert('Invalid username or password');
+            if (users[username] === password) {
+                loggedInUser = username;
+                document.getElementById("authSection").classList.add("hidden");
+                document.getElementById("mainContent").classList.remove("hidden");
+            } else {
+                document.getElementById("authMessage").innerText = "Invalid credentials.";
+            }
         }
-      });
 
-      // Shift form submission
-      shiftForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-   const date = document.getElementById('date').value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const startAmPm = document.getElementById('startAmPm').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        const endAmPm = document.getElementById('endAmPm').value;
-        const breakTime = parseInt(document.getElementById('breakTime').value);
+        function showShiftForm() {
+            document.getElementById("shiftForm").classList.toggle("hidden");
+        }
 
-        const startTime = `${startHour}:${startMinute} ${startAmPm}`;
-        const endTime = `${endHour}:${endMinute} ${endAmPm}`;
+        function addShift() {
+            let day = document.getElementById("day").value;
+            let startTime = document.getElementById("startTime").value;
+            let endTime = document.getElementById("endTime").value;
 
-        // Calculate hours worked
-        const hoursWorked = calculateHoursWorked(startTime, endTime, breakTime);
- const newShift = {
-          date,
-          startTime,
-          endTime,
-          breakTime,
-          hoursWorked,
-        };
+            if (!startTime || !endTime) return alert("Please enter valid shift times.");
 
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.push(newShift);
-        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
+            let weekEnding = getWeekEnding();
+            if (!shifts[weekEnding]) shifts[weekEnding] = [];
 
-        displayShifts();
-        shiftForm.reset();
-      });
-    });
-  </script>
+            let shift = { day, startTime, endTime };
+            shifts[weekEnding].push(shift);
+            renderShifts();
+        }
+
+        function getWeekEnding() {
+            let today = new Date();
+            let daysUntilSunday = 7 - today.getDay();
+            let weekEndDate = new Date(today);
+            weekEndDate.setDate(today.getDate() + daysUntilSunday);
+            return `Week ending ${weekEndDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}`;
+        }
+
+        function renderShifts() {
+            let container = document.getElementById("shiftContainer");
+            container.innerHTML = "";
+
+            let sortedWeeks = Object.keys(shifts).sort((a, b) => new Date(b.split(' ')[2]) - new Date(a.split(' ')[2]));
+
+            sortedWeeks.forEach(week => {
+                let weekDiv = document.createElement("div");
+                weekDiv.classList.add("week-container");
+
+                let header = document.createElement("div");
+                header.classList.add("week-header");
+                header.innerText = week;
+                header.onclick = () => {
+                    let details = weekDiv.querySelector(".shift-details");
+                    details.classList.toggle("hidden");
+                };
+
+                let detailsDiv = document.createElement("div");
+                detailsDiv.classList.add("shift-details", "hidden");
+
+                shifts[week].forEach((shift, index) => {
+                    let shiftDiv = document.createElement("div");
+                    shiftDiv.innerHTML = `${shift.day} ${shift.startTime} - ${shift.endTime} 
+                        <span class="edit-btn" onclick="editShift('${week}', ${index})">✏️</span>
+                        <span class="delete-btn" onclick="deleteShift('${week}', ${index})">❌</span>`;
+                    detailsDiv.appendChild(shiftDiv);
+                });
+
+                let calcBtn = document.createElement("button");
+                calcBtn.innerText = "Calculate Earnings";
+                calcBtn.onclick = () => calculateEarnings(week, detailsDiv);
+                detailsDiv.appendChild(calcBtn);
+
+                weekDiv.appendChild(header);
+                weekDiv.appendChild(detailsDiv);
+                container.appendChild(weekDiv);
+            });
+        }
+
+        function editShift(week, index) {
+            let newTime = prompt("Enter new start and end time (HH:MM-HH:MM):");
+            if (!newTime) return;
+            let [start, end] = newTime.split("-");
+            shifts[week][index].startTime = start;
+            shifts[week][index].endTime = end;
+            renderShifts();
+        }
+
+        function deleteShift(week, index) {
+            shifts[week].splice(index, 1);
+            if (shifts[week].length === 0) delete shifts[week];
+            renderShifts();
+        }
+
+        function calculateEarnings(week, container) {
+            let totalEarnings = 0;
+            shifts[week].forEach(shift => {
+                let rate = (shift.day === "Sunday") ? 44.89 : 32.07;
+                let hours = (new Date(`1970-01-01T${shift.endTime}`) - new Date(`1970-01-01T${shift.startTime}`)) / 3600000;
+                totalEarnings += rate * hours;
+            });
+
+            let tax = totalEarnings > 18200 ? (totalEarnings - 18200) * 0.16 : 0;
+            container.innerHTML += `<p>Total Earnings: $${totalEarnings.toFixed(2)} | Tax: $${tax.toFixed(2)} | Receivable: $${(totalEarnings - tax).toFixed(2)}</p>`;
+        }
+    </script>
+
 </body>
 </html>
