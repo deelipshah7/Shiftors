@@ -1,285 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Shift Tracker</title>
-  <style>
-    /* Previous CSS styles remain unchanged */
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Tracker Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #5f6368;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .time-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: #1557b0;
+        }
+
+        .secondary-btn {
+            background: #34a853;
+            color: white;
+        }
+
+        .danger-btn {
+            background: #ea4335;
+            color: white;
+        }
+
+        .week-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .week-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .shift-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .shift-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .tax-results {
+            background: #e8f0fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <!-- Login/Signup Containers (same as previous) -->
+    <!-- Login Container -->
+    <div class="container" id="loginContainer">
+        <h1>Shift Tracker Login</h1>
+        <form id="loginForm">
+            <label>Username:</label>
+            <input type="text" id="username" required>
+            <label>Password:</label>
+            <input type="password" id="password" required>
+            <button type="submit" class="primary-btn">Login</button>
+        </form>
+        <div style="text-align: center; margin-top: 15px;">
+            Don't have an account? <a href="#" onclick="showSignup()" style="color: #1a73e8;">Sign Up</a>
+        </div>
+    </div>
 
-  <!-- Main Application Container -->
-  <div class="container hidden" id="shiftContainer">
-    <!-- Shift Entry Form (same as previous) -->
-    <!-- Weekly Summaries Section -->
-    <div id="weekList"></div>
-  </div>
+    <!-- Signup Container -->
+    <div class="container hidden" id="signupContainer">
+        <h1>Create Account</h1>
+        <form id="signupForm">
+            <label>Username:</label>
+            <input type="text" id="newUsername" required>
+            <label>Password:</label>
+            <input type="password" id="newPassword" required>
+            <button type="submit" class="primary-btn">Create Account</button>
+        </form>
+        <div style="text-align: center; margin-top: 15px;">
+            Already have an account? <a href="#" onclick="showLogin()" style="color: #1a73e8;">Login</a>
+        </div>
+    </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Previous DOM references and state variables
-
-      // Complete User Management
-      document.getElementById('switchToSignup').addEventListener('click', () => {
-        loginContainer.classList.add('hidden');
-        signupContainer.classList.remove('hidden');
-      });
-
-      document.getElementById('switchToLogin').addEventListener('click', () => {
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const newUsername = document.getElementById('newUsername').value;
+    <!-- Main App Container -->
+    <div class="container hidden" id="mainContainer">
+        <h1>Shift Manager</h1>
         
-        if (users.some(u => u.username === newUsername)) {
-          alert('Username already exists!');
-          return;
-        }
-
-        users.push({
-          username: newUsername,
-          password: document.getElementById('newPassword').value
-        });
-        localStorage.setItem('users', JSON.stringify(users));
-        alert('Account created successfully! Please login.');
-        signupForm.reset();
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        const user = users.find(u => u.username === username && u.password === password);
-        if (user) {
-          currentUser = username;
-          loginContainer.classList.add('hidden');
-          shiftContainer.classList.remove('hidden');
-          displayShifts();
-        } else {
-          alert('Invalid username or password!');
-        }
-      });
-
-      // Complete Shift Form Handler
-      shiftForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        
-        // Convert to 24-hour format
-        const to24h = (hour, minute, period) => {
-          let hr = parseInt(hour);
-          if (period === 'PM' && hr !== 12) hr += 12;
-          if (period === 'AM' && hr === 12) hr = 0;
-          return `${hr.toString().padStart(2, '0')}:${minute}`;
-        };
-
-        const newShift = {
-          date: document.getElementById('date').value,
-          startTime: to24h(
-            document.getElementById('startHour').value,
-            document.getElementById('startMinute').value,
-            document.getElementById('startAmPm').value
-          ),
-          endTime: to24h(
-            document.getElementById('endHour').value,
-            document.getElementById('endMinute').value,
-            document.getElementById('endAmPm').value
-          ),
-          breakTime: parseInt(document.getElementById('breakTime').value)
-        };
-
-        if (editingIndex !== null) {
-          shifts[editingIndex] = newShift;
-          editingIndex = null;
-        } else {
-          shifts.push(newShift);
-        }
-
-        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(shifts));
-        shiftForm.reset();
-        displayShifts();
-      });
-
-      // Complete Display Functions
-      const displayShifts = () => {
-        const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        weekList.innerHTML = '';
-
-        // Group shifts by week
-        const weeks = {};
-        shifts.forEach((shift, index) => {
-          const date = new Date(shift.date);
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - (date.getDay() || 7) + 1); // Monday start
-          
-          const weekKey = `Week ${weekStart.getDate()}/${weekStart.getMonth()+1}/${weekStart.getFullYear().toString().slice(-2)}`;
-          
-          if (!weeks[weekKey]) {
-            weeks[weekKey] = { shifts: [], total: 0 };
-          }
-          
-          // Calculate earnings
-          const hoursWorked = calculateHoursWorked(shift.startTime, shift.endTime, shift.breakTime);
-          const payRate = getPayRate(shift.date, shift.startTime);
-          const earnings = hoursWorked * payRate;
-          
-          weeks[weekKey].shifts.push({ ...shift, index, earnings });
-          weeks[weekKey].total += earnings;
-        });
-
-        // Display each week
-        Object.entries(weeks).forEach(([weekName, weekData]) => {
-          const weekDiv = document.createElement('div');
-          weekDiv.className = 'week-summary';
-
-          // Week Header
-          const header = document.createElement('div');
-          header.className = 'week-header';
-          header.innerHTML = `
-            <div>${weekName}</div>
-            <div>$${weekData.total.toFixed(2)}</div>
-          `;
-
-          // Week Details
-          const details = document.createElement('div');
-          details.className = 'week-details hidden';
-
-          // Shifts List
-          weekData.shifts.forEach(shift => {
-            const shiftDiv = document.createElement('div');
-            shiftDiv.className = 'shift-entry';
-            shiftDiv.innerHTML = `
-              <div><strong>Date:</strong> ${shift.date}</div>
-              <div><strong>Time:</strong> ${format12h(shift.startTime)} - ${format12h(shift.endTime)}</div>
-              <div><strong>Break:</strong> ${shift.breakTime} mins</div>
-              <div><strong>Earnings:</strong> $${shift.earnings.toFixed(2)}</div>
-              <div class="shift-actions">
-                <button class="edit-btn" data-index="${shift.index}">Edit</button>
-                <button class="delete-btn" data-index="${shift.index}">Delete</button>
-              </div>
-            `;
-            details.appendChild(shiftDiv);
-          });
-
-          // Tax Calculation
-          const taxSection = document.createElement('div');
-          taxSection.className = 'tax-section';
-          taxSection.innerHTML = `
-            <button class="calculate-tax-btn">Calculate Tax</button>
-            <div class="tax-results hidden">
-              <p>Annual Income: $<span class="annual-income">0.00</span></p>
-              <p>Annual Tax: $<span class="annual-tax">0.00</span></p>
-              <p>Weekly Tax: $<span class="weekly-tax">0.00</span></p>
-              <p>Effective Tax Rate: <span class="tax-rate">0.00</span>%</p>
+        <!-- Shift Entry Form -->
+        <form id="shiftForm">
+            <label>Date:</label>
+            <input type="date" id="shiftDate" required>
+            
+            <div class="time-group">
+                <div>
+                    <label>Start Time</label>
+                    <select id="startHour">
+                        <option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option>
+                        <option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option>
+                        <option value="9">9</option><option value="10">10</option>
+                        <option value="11">11</option><option value="12">12</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Minute</label>
+                    <select id="startMinute">
+                        <option value="00">00</option><option value="15">15</option>
+                        <option value="30">30</option><option value="45">45</option>
+                    </select>
+                </div>
+                <div>
+                    <label>AM/PM</label>
+                    <select id="startAmPm">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
             </div>
-          `;
 
-          taxSection.querySelector('.calculate-tax-btn').addEventListener('click', () => {
-            const annualIncome = weekData.total * 52;
-            const annualTax = calculateAnnualTax(annualIncome);
-            const weeklyTax = annualTax / 52;
-            const taxRate = (weeklyTax / weekData.total) * 100;
+            <!-- Similar time group for end time -->
+            <div class="time-group">
+                <div>
+                    <label>End Time</label>
+                    <select id="endHour">
+                        <option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option>
+                        <option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option>
+                        <option value="9">9</option><option value="10">10</option>
+                        <option value="11">11</option><option value="12">12</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Minute</label>
+                    <select id="endMinute">
+                        <option value="00">00</option><option value="15">15</option>
+                        <option value="30">30</option><option value="45">45</option>
+                    </select>
+                </div>
+                <div>
+                    <label>AM/PM</label>
+                    <select id="endAmPm">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+            </div>
 
-            taxSection.querySelector('.annual-income').textContent = annualIncome.toFixed(2);
-            taxSection.querySelector('.annual-tax').textContent = annualTax.toFixed(2);
-            taxSection.querySelector('.weekly-tax').textContent = weeklyTax.toFixed(2);
-            taxSection.querySelector('.tax-rate').textContent = taxRate.toFixed(2);
-            taxSection.querySelector('.tax-results').classList.remove('hidden');
-          });
+            <label>Break Time (minutes):</label>
+            <select id="breakTime">
+                <option value="0">0</option>
+                <option value="15">15</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+            </select>
 
-          details.appendChild(taxSection);
-          header.addEventListener('click', () => details.classList.toggle('hidden'));
-          weekDiv.append(header, details);
-          weekList.appendChild(weekDiv);
+            <button type="submit" class="primary-btn">Save Shift</button>
+        </form>
+
+        <!-- Weekly Shifts Display -->
+        <div class="week-section" id="weekList"></div>
+    </div>
+
+    <script>
+        // User Management
+        let currentUser = null;
+        let editingIndex = null;
+
+        // Initialize localStorage
+        if (!localStorage.getItem('users')) localStorage.setItem('users', JSON.stringify([]));
+
+        // Helper Functions
+        const showSection = (sectionId) => {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+        };
+
+        const calculateHours = (start, end, breakMins) => {
+            const diff = (end - start) / 1000 / 60;
+            return (diff - breakMins) / 60;
+        };
+
+        const getPayRate = (date, startTime) => {
+            const d = new Date(date);
+            const hour = parseInt(startTime.split(':')[0]);
+            const isNight = hour >= 18 || hour < 5;
+            
+            if (d.getDay() === 0) return isNight ? 51.31 : 44.89; // Sunday
+            if (d.getDay() === 6) return isNight ? 44.89 : 38.48; // Saturday
+            return isNight ? 39.76 : 32.07; // Weekdays
+        };
+
+        // Event Listeners
+        document.getElementById('loginForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users.find(u => 
+                u.username === document.getElementById('username').value &&
+                u.password === document.getElementById('password').value
+            );
+            
+            if (user) {
+                currentUser = user.username;
+                showSection('mainContainer');
+                loadShifts();
+            } else {
+                alert('Invalid credentials');
+            }
         });
 
-        // Add edit/delete handlers
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            editingIndex = parseInt(e.target.dataset.index);
-            loadShiftForEdit(editingIndex);
-          });
+        document.getElementById('signupForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const users = JSON.parse(localStorage.getItem('users'));
+            const newUser = {
+                username: document.getElementById('newUsername').value,
+                password: document.getElementById('newPassword').value
+            };
+            
+            if (users.some(u => u.username === newUser.username)) {
+                alert('Username already exists');
+                return;
+            }
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Account created! Please login');
+            showSection('loginContainer');
         });
 
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.dataset.index);
+        document.getElementById('shiftForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+            
+            const newShift = {
+                date: document.getElementById('shiftDate').value,
+                start: `${document.getElementById('startHour').value}:${document.getElementById('startMinute').value} ${document.getElementById('startAmPm').value}`,
+                end: `${document.getElementById('endHour').value}:${document.getElementById('endMinute').value} ${document.getElementById('endAmPm').value}`,
+                break: parseInt(document.getElementById('breakTime').value)
+            };
+
+            if (editingIndex !== null) {
+                shifts[editingIndex] = newShift;
+                editingIndex = null;
+            } else {
+                shifts.push(newShift);
+            }
+
+            localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(shifts));
+            loadShifts();
+            e.target.reset();
+        });
+
+        // Core Functions
+        function loadShifts() {
+            const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+            const weekList = document.getElementById('weekList');
+            weekList.innerHTML = '';
+
+            // Group by week
+            const weeks = {};
+            shifts.forEach((shift, index) => {
+                const date = new Date(shift.date);
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay());
+                const weekKey = weekStart.toISOString().split('T')[0];
+
+                if (!weeks[weekKey]) {
+                    weeks[weekKey] = {
+                        shifts: [],
+                        total: 0
+                    };
+                }
+
+                // Calculate earnings
+                const start24 = convertTo24Hour(shift.start);
+                const end24 = convertTo24Hour(shift.end);
+                const hours = calculateHours(new Date(`1970-01-01T${start24}`), new Date(`1970-01-01T${end24}`), shift.break);
+                const payRate = getPayRate(shift.date, start24);
+                const earnings = hours * payRate;
+
+                weeks[weekKey].shifts.push({...shift, index, earnings});
+                weeks[weekKey].total += earnings;
+            });
+
+            // Display weeks
+            Object.entries(weeks).forEach(([weekKey, weekData]) => {
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'week';
+                
+                // Week Header
+                const header = document.createElement('div');
+                header.className = 'week-header';
+                header.innerHTML = `
+                    <div>Week of ${new Date(weekKey).toLocaleDateString()}</div>
+                    <div>$${weekData.total.toFixed(2)}</div>
+                `;
+
+                // Week Details
+                const details = document.createElement('div');
+                details.className = 'week-details hidden';
+
+                // Shifts List
+                weekData.shifts.forEach(shift => {
+                    const shiftDiv = document.createElement('div');
+                    shiftDiv.className = 'shift-entry';
+                    shiftDiv.innerHTML = `
+                        <div>Date: ${shift.date}</div>
+                        <div>Time: ${shift.start} - ${shift.end}</div>
+                        <div>Break: ${shift.break} mins</div>
+                        <div>Earnings: $${shift.earnings.toFixed(2)}</div>
+                        <div class="shift-actions">
+                            <button class="secondary-btn" onclick="editShift(${shift.index})">Edit</button>
+                            <button class="danger-btn" onclick="deleteShift(${shift.index})">Delete</button>
+                        </div>
+                    `;
+                    details.appendChild(shiftDiv);
+                });
+
+                // Tax Calculation
+                const taxSection = document.createElement('div');
+                taxSection.className = 'tax-results';
+                taxSection.innerHTML = `
+                    <button class="primary-btn" onclick="calculateTax(this)">Calculate Tax</button>
+                    <div class="tax-details hidden">
+                        <p>Annual Income: $<span class="annual">0.00</span></p>
+                        <p>Annual Tax: $<span class="tax">0.00</span></p>
+                        <p>Weekly Tax: $<span class="weekly-tax">0.00</span></p>
+                        <p>Tax Rate: <span class="rate">0.00</span>%</p>
+                    </div>
+                `;
+
+                details.appendChild(taxSection);
+                header.addEventListener('click', () => details.classList.toggle('hidden'));
+                weekDiv.append(header, details);
+                weekList.appendChild(weekDiv);
+            });
+        }
+
+        // Utility Functions
+        function convertTo24Hour(time12) {
+            const [time, period] = time12.split(' ');
+            let [hours, minutes] = time.split(':');
+            if (period === 'PM' && hours !== '12') hours = parseInt(hours) + 12;
+            if (period === 'AM' && hours === '12') hours = '00';
+            return `${hours.padStart(2, '0')}:${minutes}`;
+        }
+
+        function editShift(index) {
+            const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+            const shift = shifts[index];
+            
+            // Convert time to 12-hour format
+            const [startHour, startMinute] = convertTo24Hour(shift.start).split(':');
+            const [endHour, endMinute] = convertTo24Hour(shift.end).split(':');
+            
+            document.getElementById('shiftDate').value = shift.date;
+            document.getElementById('startHour').value = startHour % 12 || 12;
+            document.getElementById('startMinute').value = startMinute;
+            document.getElementById('startAmPm').value = startHour >= 12 ? 'PM' : 'AM';
+            
+            document.getElementById('endHour').value = endHour % 12 || 12;
+            document.getElementById('endMinute').value = endMinute;
+            document.getElementById('endAmPm').value = endHour >= 12 ? 'PM' : 'AM';
+            
+            document.getElementById('breakTime').value = shift.break;
+            editingIndex = index;
+        }
+
+        function deleteShift(index) {
             const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
             shifts.splice(index, 1);
             localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(shifts));
-            displayShifts();
-          });
-        });
-      };
+            loadShifts();
+        }
 
-      // Helper Functions
-      const calculateHoursWorked = (startTime, endTime, breakMinutes) => {
-        const start = new Date(`1970-01-01T${startTime}`);
-        const end = new Date(`1970-01-01T${endTime}`);
-        return (end - start) / 1000 / 60 / 60 - (breakMinutes / 60);
-      };
+        function calculateTax(button) {
+            const weekEarnings = parseFloat(button.parentElement.parentElement.querySelector('.week-header div:last-child').textContent.slice(1));
+            const annualIncome = weekEarnings * 52;
+            let tax = 0;
 
-      const getPayRate = (dateString, startTime) => {
-        const date = new Date(dateString);
-        const [hours, period] = startTime.split(' ');
-        const hour = parseInt(hours) + (period === 'PM' && hours !== '12' ? 12 : 0);
-        
-        const isWeekday = date.getDay() >= 1 && date.getDay() <= 5;
-        const isNight = hour >= 18 || hour < 5;
+            if (annualIncome > 190000) tax = 51638 + (annualIncome - 190000) * 0.45;
+            else if (annualIncome > 135000) tax = 31288 + (annualIncome - 135000) * 0.37;
+            else if (annualIncome > 45000) tax = 4288 + (annualIncome - 45000) * 0.3;
+            else if (annualIncome > 18200) tax = (annualIncome - 18200) * 0.16;
 
-        if (isWeekday) return isNight ? 39.76 : 32.07;
-        if (date.getDay() === 6) return isNight ? 44.89 : 38.48; // Saturday
-        return isNight ? 51.31 : 44.89; // Sunday
-      };
+            const weeklyTax = tax / 52;
+            const taxRate = (weeklyTax / weekEarnings) * 100;
 
-      const calculateAnnualTax = (income) => {
-        if (income <= 18200) return 0;
-        if (income <= 45000) return (income - 18200) * 0.16;
-        if (income <= 135000) return 4288 + (income - 45000) * 0.3;
-        if (income <= 190000) return 31288 + (income - 135000) * 0.37;
-        return 51638 + (income - 190000) * 0.45;
-      };
+            const details = button.nextElementSibling;
+            details.querySelector('.annual').textContent = annualIncome.toFixed(2);
+            details.querySelector('.tax').textContent = tax.toFixed(2);
+            details.querySelector('.weekly-tax').textContent = weeklyTax.toFixed(2);
+            details.querySelector('.rate').textContent = taxRate.toFixed(2);
+            details.classList.remove('hidden');
+        }
 
-      const format12h = (time24) => {
-        const [hours, minutes] = time24.split(':');
-        const hr = parseInt(hours);
-        const period = hr >= 12 ? 'PM' : 'AM';
-        const displayHr = hr % 12 || 12;
-        return `${displayHr}:${minutes} ${period}`;
-      };
-
-      const loadShiftForEdit = (index) => {
-        const shifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        const shift = shifts[index];
-        
-        const [startHr, startMin] = shift.startTime.split(':');
-        const [endHr, endMin] = shift.endTime.split(':');
-        
-        document.getElementById('date').value = shift.date;
-        document.getElementById('startHour').value = format12h(shift.startTime).split(':')[0].padStart(2, '0');
-        document.getElementById('startMinute').value = startMin;
-        document.getElementById('startAmPm').value = parseInt(startHr) >= 12 ? 'PM' : 'AM';
-        
-        document.getElementById('endHour').value = format12h(shift.endTime).split(':')[0].padStart(2, '0');
-        document.getElementById('endMinute').value = endMin;
-        document.getElementById('endAmPm').value = parseInt(endHr) >= 12 ? 'PM' : 'AM';
-        
-        document.getElementById('breakTime').value = shift.breakTime;
-        shiftForm.querySelector('button').textContent = 'Update Shift';
-        window.scrollTo(0, 0);
-      };
-    });
-  </script>
+        function showLogin() { showSection('loginContainer'); }
+        function showSignup() { showSection('signupContainer'); }
+    </script>
 </body>
 </html>
