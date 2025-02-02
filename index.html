@@ -97,6 +97,38 @@
       background-color: #e9ecef;
       border-radius: 4px;
     }
+
+    .week-item {
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .week-item h3 {
+      margin: 0;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .week-details {
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    .shift-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .shift-actions button {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -210,9 +242,7 @@
     </form>
 
     <h2>Saved Shifts</h2>
-    <ul id="shiftList"></ul>
-
-    <div id="weeklySummary"></div>
+    <div id="weeklyList"></div>
   </div>
 
   <script>
@@ -223,43 +253,153 @@
       const loginForm = document.getElementById('loginForm');
       const signupForm = document.getElementById('signupForm');
       const shiftForm = document.getElementById('shiftForm');
-      const shiftList = document.getElementById('shiftList');
-      const weeklySummary = document.getElementById('weeklySummary');
+      const weeklyList = document.getElementById('weeklyList');
       const switchToSignup = document.getElementById('switchToSignup');
       const switchToLogin = document.getElementById('switchToLogin');
 
       let currentUser = null;
+      let expandedWeek = null;
 
       // Function to display shifts
       function displayShifts() {
-        shiftList.innerHTML = '';
         const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.forEach((shift, index) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <strong>Date:</strong> ${shift.date}<br>
-            <strong>Start Time:</strong> ${shift.startTime}<br>
-            <strong>End Time:</strong> ${shift.endTime}<br>
-            <strong>Break Time:</strong> ${shift.breakTime} minutes<br>
-            <strong>Hours Worked:</strong> ${shift.hoursWorked}
-          `;
-          shiftList.appendChild(li);
+        const weeks = groupShiftsByWeek(userShifts);
+        renderWeeklyList(weeks);
+      }
+
+      // Function to group shifts by week
+      function groupShiftsByWeek(shifts) {
+        const weeks = {};
+
+        shifts.forEach(shift => {
+          const date = new Date(shift.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay()); // Start of the week (Sunday)
+          const weekKey = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
+
+          if (!weeks[weekKey]) {
+            weeks[weekKey] = { shifts: [], gross: 0, tax: 0, net: 0 };
+          }
+
+          const [hours, minutes] = shift.hoursWorked.split(' hours and ');
+          const totalHours = parseFloat(hours) + parseFloat(minutes) / 60;
+          const payRate = getPayRate(shift.date, shift.startTime);
+          const earnings = totalHours * payRate;
+
+          weeks[weekKey].shifts.push({ ...shift, earnings });
+          weeks[weekKey].gross += earnings;
         });
 
-        // Display weekly summary
-        displayWeeklySummary(userShifts);
+        // Calculate tax and net pay for each week
+        for (const week in weeks) {
+          weeks[week].tax = calculateTax(weeks[week].gross);
+          weeks[week].net = weeks[week].gross - weeks[week].tax;
+        }
+
+        return weeks;
       }
 
-      // Function to calculate hours worked
-      function calculateHoursWorked(startTime, endTime, breakTime) {
-        const start = new Date(`1970-01-01 ${startTime}`);
-        const end = new Date(`1970-01-01 ${endTime}`);
-        let diff = (end - start) / 1000 / 60; // Difference in minutes
-        diff -= breakTime; // Subtract break time
-        const hours = Math.floor(diff / 60);
-        const minutes = diff % 60;
-        return `${hours} hours and ${minutes} minutes`;
+      // Function to render the weekly list
+      function renderWeeklyList(weeks) {
+        weeklyList.innerHTML = '';
+        const sortedWeeks = Object.keys(weeks).sort((a, b) => new Date(b.split(' ')[1]) - new Date(a.split(' ')[1]));
+
+        sortedWeeks.forEach(weekKey => {
+          const weekItem = document.createElement('div');
+          weekItem.className = 'week-item';
+          weekItem.innerHTML = `<h3>${weekKey}</h3>`;
+
+          const weekDetails = document.createElement('div');
+          weekDetails.className = 'week-details hidden';
+
+          const weekSummary = document.createElement('div');
+          weekSummary.innerHTML = `
+            <strong>Gross Pay:</strong> $${weeks[weekKey].gross.toFixed(2)}<br>
+            <strong>Tax:</strong> $${weeks[weekKey].tax.toFixed(2)}<br>
+            <strong>Net Pay:</strong> $${weeks[weekKey].net.toFixed(2)}
+          `;
+          weekDetails.appendChild(weekSummary);
+
+          weeks[weekKey].shifts.forEach((shift, index) => {
+            const shiftItem = document.createElement('div');
+            shiftItem.innerHTML = `
+              <strong>Date:</strong> ${shift.date}<br>
+              <strong>Start Time:</strong> ${shift.startTime}<br>
+              <strong>End Time:</strong> ${shift.endTime}<br>
+              <strong>Break Time:</strong> ${shift.breakTime} minutes<br>
+              <strong>Hours Worked:</strong> ${shift.hoursWorked}<br>
+              <strong>Earnings:</strong> $${shift.earnings.toFixed(2)}
+              <div class="shift-actions">
+                <button onclick="editShift('${weekKey}', ${index})">Edit</button>
+                <button onclick="deleteShift('${weekKey}', ${index})">Delete</button>
+              </div>
+            `;
+            weekDetails.appendChild(shiftItem);
+          });
+
+          weekItem.appendChild(weekDetails);
+          weeklyList.appendChild(weekItem);
+
+          weekItem.addEventListener('click', () => {
+            if (expandedWeek === weekKey) {
+              weekDetails.classList.add('hidden');
+              expandedWeek = null;
+            } else {
+              if (expandedWeek) {
+                document.querySelector(`.week-item h3:contains('${expandedWeek}')`).nextElementSibling.classList.add('hidden');
+              }
+              weekDetails.classList.remove('hidden');
+              expandedWeek = weekKey;
+            }
+          });
+        });
       }
+
+      // Function to edit a shift
+      window.editShift = (weekKey, index) => {
+        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        const shift = userShifts.find(s => {
+          const date = new Date(s.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const shiftWeekKey = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
+          return shiftWeekKey === weekKey;
+        });
+
+        if (shift) {
+          document.getElementById('date').value = shift.date;
+          document.getElementById('startHour').value = shift.startTime.split(':')[0];
+          document.getElementById('startMinute').value = shift.startTime.split(':')[1].split(' ')[0];
+          document.getElementById('startAmPm').value = shift.startTime.split(' ')[1];
+          document.getElementById('endHour').value = shift.endTime.split(':')[0];
+          document.getElementById('endMinute').value = shift.endTime.split(':')[1].split(' ')[0];
+          document.getElementById('endAmPm').value = shift.endTime.split(' ')[1];
+          document.getElementById('breakTime').value = shift.breakTime;
+
+          // Remove the old shift
+          userShifts.splice(index, 1);
+          localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
+          displayShifts();
+        }
+      };
+
+      // Function to delete a shift
+      window.deleteShift = (weekKey, index) => {
+        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+        const shiftIndex = userShifts.findIndex(s => {
+          const date = new Date(s.date);
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const shiftWeekKey = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
+          return shiftWeekKey === weekKey;
+        });
+
+        if (shiftIndex !== -1) {
+          userShifts.splice(shiftIndex, 1);
+          localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
+          displayShifts();
+        }
+      };
 
       // Function to calculate pay rate
       function getPayRate(date, startTime) {
@@ -303,49 +443,6 @@
         }
       }
 
-      // Function to group shifts by week and calculate earnings
-      function displayWeeklySummary(shifts) {
-        const weeks = {};
-
-        shifts.forEach(shift => {
-          const date = new Date(shift.date);
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - date.getDay()); // Start of the week (Sunday)
-          const weekKey = `Week ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${String(weekStart.getFullYear()).slice(-2)}`;
-
-          if (!weeks[weekKey]) {
-            weeks[weekKey] = { gross: 0, tax: 0, net: 0 };
-          }
-
-          const [hours, minutes] = shift.hoursWorked.split(' hours and ');
-          const totalHours = parseFloat(hours) + parseFloat(minutes) / 60;
-          const payRate = getPayRate(shift.date, shift.startTime);
-          const earnings = totalHours * payRate;
-
-          weeks[weekKey].gross += earnings;
-        });
-
-        // Calculate tax and net pay for each week
-        for (const week in weeks) {
-          weeks[week].tax = calculateTax(weeks[week].gross);
-          weeks[week].net = weeks[week].gross - weeks[week].tax;
-        }
-
-        // Display weekly summary
-        weeklySummary.innerHTML = '<h2>Weekly Summary</h2>';
-        for (const week in weeks) {
-          const summary = document.createElement('div');
-          summary.className = 'week-summary';
-          summary.innerHTML = `
-            <strong>${week}</strong><br>
-            Gross Pay: $${weeks[week].gross.toFixed(2)}<br>
-            Tax: $${weeks[week].tax.toFixed(2)}<br>
-            Net Pay: $${weeks[week].net.toFixed(2)}
-          `;
-          weeklySummary.appendChild(summary);
-        }
-      }
-
       // Switch to Signup Form
       switchToSignup.addEventListener('click', () => {
         loginContainer.classList.add('hidden');
@@ -363,79 +460,4 @@
         e.preventDefault();
 
         const newUsername = document.getElementById('newUsername').value;
-        const newPassword = document.getElementById('newPassword').value;
-
-        // Check if username already exists
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.some(u => u.username === newUsername)) {
-          alert('Username already exists. Please choose another.');
-          return;
-        }
-
-        // Save new user
-        users.push({ username: newUsername, password: newPassword });
-        localStorage.setItem('users', JSON.stringify(users));
-
-        alert('Signup successful! Please login.');
-        signupContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-      });
-
-      // Login form submission
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (user) {
-          currentUser = username;
-          loginContainer.classList.add('hidden');
-          shiftContainer.classList.remove('hidden');
-          displayShifts();
-        } else {
-          alert('Invalid username or password');
-        }
-      });
-
-      // Shift form submission
-      shiftForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const date = document.getElementById('date').value;
-        const startHour = document.getElementById('startHour').value;
-        const startMinute = document.getElementById('startMinute').value;
-        const startAmPm = document.getElementById('startAmPm').value;
-        const endHour = document.getElementById('endHour').value;
-        const endMinute = document.getElementById('endMinute').value;
-        const endAmPm = document.getElementById('endAmPm').value;
-        const breakTime = parseInt(document.getElementById('breakTime').value);
-
-        const startTime = `${startHour}:${startMinute} ${startAmPm}`;
-        const endTime = `${endHour}:${endMinute} ${endAmPm}`;
-
-        // Calculate hours worked
-        const hoursWorked = calculateHoursWorked(startTime, endTime, breakTime);
-
-        const newShift = {
-          date,
-          startTime,
-          endTime,
-          breakTime,
-          hoursWorked,
-        };
-
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.push(newShift);
-        localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
-
-        displayShifts();
-        shiftForm.reset();
-      });
-    });
-  </script>
-</body>
-</html>
+        const newPassword = document.getElementById('newPassword
