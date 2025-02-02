@@ -224,9 +224,6 @@
       <button type="submit">Save Shift</button>
     </form>
 
-    <h2>Saved Shifts</h2>
-    <ul id="shiftList"></ul>
-
     <div class="week-summary">
       <h2>Weekly Earnings</h2>
       <div id="weekList"></div>
@@ -241,32 +238,11 @@
       const loginForm = document.getElementById('loginForm');
       const signupForm = document.getElementById('signupForm');
       const shiftForm = document.getElementById('shiftForm');
-      const shiftList = document.getElementById('shiftList');
       const weekList = document.getElementById('weekList');
       const switchToSignup = document.getElementById('switchToSignup');
       const switchToLogin = document.getElementById('switchToLogin');
 
       let currentUser = null;
-
-      // Function to display shifts
-      function displayShifts() {
-        shiftList.innerHTML = '';
-        const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
-        userShifts.forEach((shift, index) => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <strong>Date:</strong> ${shift.date}<br>
-            <strong>Start Time:</strong> ${shift.startTime}<br>
-            <strong>End Time:</strong> ${shift.endTime}<br>
-            <strong>Break Time:</strong> ${shift.breakTime} minutes<br>
-            <strong>Hours Worked:</strong> ${shift.hoursWorked}
-          `;
-          shiftList.appendChild(li);
-        });
-
-        // Display weekly earnings
-        displayWeeklyEarnings(userShifts);
-      }
 
       // Function to calculate hours worked
       function calculateHoursWorked(startTime, endTime, breakTime) {
@@ -303,6 +279,13 @@
         else return 51638 + (income - 190000) * 0.45;
       }
 
+      // Function to get the start of the week (Monday)
+      function getStartOfWeek(date) {
+        const day = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+        return new Date(date.setDate(diff));
+      }
+
       // Function to display weekly earnings
       function displayWeeklyEarnings(shifts) {
         weekList.innerHTML = '';
@@ -311,8 +294,7 @@
         const weeks = {};
         shifts.forEach(shift => {
           const date = new Date(shift.date);
-          const weekStart = new Date(date);
-          weekStart.setDate(date.getDate() - date.getDay()); // Start of the week (Sunday)
+          const weekStart = getStartOfWeek(new Date(date)); // Start of the week (Monday)
           const weekKey = `Week ${weekStart.getDate()}/${weekStart.getMonth() + 1}/${String(weekStart.getFullYear()).slice(-2)}`;
 
           if (!weeks[weekKey]) {
@@ -420,7 +402,8 @@
           currentUser = username;
           loginContainer.classList.add('hidden');
           shiftContainer.classList.remove('hidden');
-          displayShifts();
+          const userShifts = JSON.parse(localStorage.getItem(`shifts_${currentUser}`)) || [];
+          displayWeeklyEarnings(userShifts);
         } else {
           alert('Invalid username or password');
         }
@@ -457,7 +440,7 @@
         userShifts.push(newShift);
         localStorage.setItem(`shifts_${currentUser}`, JSON.stringify(userShifts));
 
-        displayShifts();
+        displayWeeklyEarnings(userShifts);
         shiftForm.reset();
       });
     });
