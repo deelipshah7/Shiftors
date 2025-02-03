@@ -345,27 +345,45 @@
           const taxButton = document.createElement('button');
           taxButton.className = 'calculate-tax';
           taxButton.textContent = 'Calculate Tax';
-          taxButton.addEventListener('click', () => {
-            const annualIncome = weekData.total * 52;
-            const annualTax = calculateAnnualTax(annualIncome);
-            const weeklyTax = annualTax / 52;
-            const taxPercentage = (weeklyTax / weekData.total * 100).toFixed(1);
+          const taxDetails = document.createElement('div');
+          taxDetails.className = 'tax-details hidden';
 
-            const taxDetails = document.createElement('div');
-            taxDetails.className = 'tax-details';
-            taxDetails.innerHTML = `
-              <strong>Pre-tax Earnings:</strong> $${weekData.total.toFixed(2)}<br>
-              <strong>Tax Deducted:</strong> $${weeklyTax.toFixed(2)}<br>
-              <strong>Tax Rate:</strong> ${taxPercentage}%<br>
-              <strong>Net Earnings:</strong> $${(weekData.total - weeklyTax).toFixed(2)}
-            `;
-            details.appendChild(taxDetails);
+          taxButton.addEventListener('click', () => {
+            taxDetails.classList.toggle('hidden');
+            if (!taxDetails.classList.contains('hidden')) {
+              const annualIncome = weekData.total * 52;
+              const annualTax = calculateAnnualTax(annualIncome);
+              const weeklyTax = annualTax / 52;
+              const taxPercentage = (weeklyTax / weekData.total * 100).toFixed(1);
+
+              taxDetails.innerHTML = `
+                <strong>Pre-tax Earnings:</strong> $${weekData.total.toFixed(2)}<br>
+                <strong>Tax Deducted:</strong> $${weeklyTax.toFixed(2)}<br>
+                <strong>Tax Rate:</strong> ${taxPercentage}%<br>
+                <strong>Net Earnings:</strong> $${(weekData.total - weeklyTax).toFixed(2)}
+              `;
+            }
           });
 
           details.appendChild(taxButton);
+          details.appendChild(taxDetails);
           weekDiv.append(header, details);
           weekList.appendChild(weekDiv);
         }
+
+        // Add event listeners for edit/delete buttons
+        weekList.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            editingIndex = parseInt(e.target.dataset.index);
+            loadShiftForEdit(editingIndex);
+          });
+        });
+
+        weekList.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            deleteShift(parseInt(e.target.dataset.index));
+          });
+        });
       }
 
       function loadShiftForEdit(index) {
