@@ -124,6 +124,12 @@
       background-color: #f8f9fa;
       border-radius: 4px;
     }
+
+    .calculate-tax {
+      background-color: #007bff;
+      color: white;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -309,35 +315,13 @@
 
           const header = document.createElement('h3');
           header.textContent = weekName;
-          
-          const details = document.createElement('div');
-          details.className = 'week-details';
-
-          // Weekly total and tax button
-          const summary = document.createElement('div');
-          summary.innerHTML = `
-            <strong>Total Earnings:</strong> $${weekData.total.toFixed(2)}
-            <button class="calculate-tax">Calculate Tax</button>
-            <div class="tax-details hidden"></div>
-          `;
-
-          // Tax calculation handler
-          const taxButton = summary.querySelector('.calculate-tax');
-          const taxDetails = summary.querySelector('.tax-details');
-          taxButton.addEventListener('click', () => {
-            const annualIncome = weekData.total * 52;
-            const annualTax = calculateAnnualTax(annualIncome);
-            const weeklyTax = annualTax / 52;
-            const taxPercentage = (weeklyTax / weekData.total * 100).toFixed(1);
-
-            taxDetails.innerHTML = `
-              <strong>Pre-tax Earnings:</strong> $${weekData.total.toFixed(2)}<br>
-              <strong>Tax Deducted:</strong> $${weeklyTax.toFixed(2)}<br>
-              <strong>Tax Rate:</strong> ${taxPercentage}%<br>
-              <strong>Net Earnings:</strong> $${(weekData.total - weeklyTax).toFixed(2)}
-            `;
-            taxDetails.classList.remove('hidden');
+          header.addEventListener('click', () => {
+            const details = weekDiv.querySelector('.week-details');
+            details.classList.toggle('hidden');
           });
+
+          const details = document.createElement('div');
+          details.className = 'week-details hidden';
 
           // Shifts list
           weekData.shifts.forEach(({ shift, index }) => {
@@ -357,21 +341,29 @@
             details.appendChild(shiftDiv);
           });
 
-          // Event listeners for edit/delete
-          details.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              editingIndex = parseInt(e.target.dataset.index);
-              loadShiftForEdit(editingIndex);
-            });
+          // Tax calculation button and details
+          const taxButton = document.createElement('button');
+          taxButton.className = 'calculate-tax';
+          taxButton.textContent = 'Calculate Tax';
+          taxButton.addEventListener('click', () => {
+            const annualIncome = weekData.total * 52;
+            const annualTax = calculateAnnualTax(annualIncome);
+            const weeklyTax = annualTax / 52;
+            const taxPercentage = (weeklyTax / weekData.total * 100).toFixed(1);
+
+            const taxDetails = document.createElement('div');
+            taxDetails.className = 'tax-details';
+            taxDetails.innerHTML = `
+              <strong>Pre-tax Earnings:</strong> $${weekData.total.toFixed(2)}<br>
+              <strong>Tax Deducted:</strong> $${weeklyTax.toFixed(2)}<br>
+              <strong>Tax Rate:</strong> ${taxPercentage}%<br>
+              <strong>Net Earnings:</strong> $${(weekData.total - weeklyTax).toFixed(2)}
+            `;
+            details.appendChild(taxDetails);
           });
 
-          details.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              deleteShift(parseInt(e.target.dataset.index));
-            });
-          });
-
-          weekDiv.append(header, summary, details);
+          details.appendChild(taxButton);
+          weekDiv.append(header, details);
           weekList.appendChild(weekDiv);
         }
       }
