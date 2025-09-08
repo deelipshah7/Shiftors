@@ -14,7 +14,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
             color: #333;
             min-height: 100vh;
             padding: 20px;
@@ -30,6 +30,9 @@
             margin-bottom: 30px;
             padding: 20px;
             color: white;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
         
         h1 {
@@ -137,6 +140,7 @@
             margin-bottom: 20px;
             padding-bottom: 20px;
             border-bottom: 1px solid #f1f1f1;
+            position: relative;
         }
         
         .schedule-item:last-child {
@@ -272,13 +276,106 @@
             padding: 20px;
             opacity: 0.8;
         }
+        
+        .meal-macros {
+            display: none;
+            background: #e8f4fc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .show-macros .meal-macros {
+            display: block;
+        }
+        
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            background: #6c5ce7;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        
+        .macro-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+        
+        .macro-bar {
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 2px;
+            background: linear-gradient(90deg, #4cd964, #5ac8fa, #ffcc00, #ff2d55);
+        }
+        
+        .progress {
+            height: 100%;
+            border-radius: 3px;
+        }
+        
+        .daily-summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .daily-summary h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .summary-stat {
+            padding: 10px;
+        }
+        
+        .summary-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .summary-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .toggle-macros {
+            margin-top: 10px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-calendar-alt"></i> Weekly Schedule</h1>
-            <p class="description">Your organized routine with nutrition information</p>
+            <h1><i class="fas fa-calendar-alt"></i> Fitness & Nutrition Planner</h1>
+            <p class="description">Your organized routine with detailed nutrition information</p>
         </header>
         
         <div class="controls">
@@ -290,6 +387,9 @@
             </button>
             <button class="btn btn-expand-all" onclick="collapseAll()">
                 <i class="fas fa-compress"></i> Collapse All Days
+            </button>
+            <button class="btn" onclick="toggleMacros()">
+                <i class="fas fa-info-circle"></i> Toggle Meal Macros
             </button>
         </div>
         
@@ -303,10 +403,17 @@
                 <div class="schedule-items">
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">3:50am</div>
+                        <div class="time">4:00am</div>
                         <div class="activity">
                             Breakfast
                             <div class="meal-details">2 Toast + 2Egg whole</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>55.2g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>27.2g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>16g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>466 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 70%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
@@ -315,78 +422,84 @@
                         <div class="activity">
                             Work <span class="highlight">(have lunch at work)</span>
                             <div class="meal-details">70g Brown Rice + 200g chicken breast + 33g of daal</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>64.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>56.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>10.1g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>586 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 85%; background: #5ac8fa;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">10:10am</div>
-                        <div class="activity">Reach home</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-capsules"></i></div>
                         <div class="time">10:30am</div>
                         <div class="activity">
-                            Have PreWorkout
-                            <div class="meal-details">50g Oat + 75g milk lite + 75g Yogurt + 140g Blueberry + 4 Dates</div>
+                            Preworkout
+                            <div class="meal-details">50g Oat + 75g milk lite + 150g Yogurt + 140g Blueberry + 1srv whey</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>65.3g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>38.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>11.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>535 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 80%; background: #ffcc00;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">11:00am</div>
-                        <div class="activity">Cook Mutton, Marinate chicken breast and soak white rice</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-dumbbell"></i></div>
-                        <div class="time">11:10am</div>
-                        <div class="activity">Go to gym</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">12:50pm</div>
-                        <div class="activity">Go to home</div>
+                        <div class="time">11:30am - 12:30pm</div>
+                        <div class="activity">Gym</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">1:00pm</div>
+                        <div class="time">12:30pm</div>
                         <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake + 3pc Weet-Bix</div>
+                            Snack
+                            <div class="meal-details">4 Dates + 1 Banana (avg: 120g) + 2 Orange (avg: 130g each)</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>88.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>4.5g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>1.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>381 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 75%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
+                        <div class="time">4:30pm</div>
                         <div class="activity">
-                            Cook chicken breast and Have dinner
+                            Dinner
                             <div class="meal-details">200g Mutton + 15g cooking oil + 120g white Rice</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>88.8g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>39g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>26.7g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>763 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 90%; background: #ff2d55;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">7:50pm</div>
-                        <div class="activity">Sleep</div>
                     </div>
                     
-                    <div class="nutrition-info" id="sunday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">304.7g</div>
-                                <div class="nutrition-label">Carbs</div>
+                    <div class="daily-summary">
+                        <h3><i class="fas fa-chart-pie"></i> Daily Nutrition Summary</h3>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <div class="summary-value">362g</div>
+                                <div class="summary-label">Carbs</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">166.7g</div>
-                                <div class="nutrition-label">Protein</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">166g</div>
+                                <div class="summary-label">Protein</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">65.1g</div>
-                                <div class="nutrition-label">Fat</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">65g</div>
+                                <div class="summary-label">Fat</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">2471 kcal</div>
-                                <div class="nutrition-label">Calories</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">2731</div>
+                                <div class="summary-label">Calories</div>
                             </div>
                         </div>
                     </div>
@@ -402,10 +515,17 @@
                 <div class="schedule-items">
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">3:50am</div>
+                        <div class="time">4:00am</div>
                         <div class="activity">
                             Breakfast
                             <div class="meal-details">2 Toast + 2Egg whole</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>55.2g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>27.2g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>16g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>466 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 70%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
@@ -414,78 +534,84 @@
                         <div class="activity">
                             Work <span class="highlight">(have lunch at work)</span>
                             <div class="meal-details">70g Brown Rice + 200g chicken breast + 33g of daal</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>64.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>56.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>10.1g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>586 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 85%; background: #5ac8fa;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">10:10am</div>
-                        <div class="activity">Reach home</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-capsules"></i></div>
                         <div class="time">10:30am</div>
                         <div class="activity">
-                            Have PreWorkout
-                            <div class="meal-details">50g Oat + 75g milk lite + 75g Yogurt + 140g Blueberry + 4 Dates</div>
+                            Preworkout
+                            <div class="meal-details">50g Oat + 75g milk lite + 150g Yogurt + 140g Blueberry + 1srv whey</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>65.3g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>38.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>11.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>535 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 80%; background: #ffcc00;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">11:00am</div>
-                        <div class="activity">Soak white rice, cook chicken breast, and soak brown rice 3srv and daal 3srv</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-dumbbell"></i></div>
-                        <div class="time">11:10am</div>
-                        <div class="activity">Go to gym</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">12:50pm</div>
-                        <div class="activity">Go to home</div>
+                        <div class="time">11:30am - 12:30pm</div>
+                        <div class="activity">Gym</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">1:00pm</div>
+                        <div class="time">12:30pm</div>
                         <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake + 3pc Weet-Bix</div>
+                            Snack
+                            <div class="meal-details">4 Dates + 1 Banana (avg: 120g) + 2 Orange (avg: 130g each)</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>88.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>4.5g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>1.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>381 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 75%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
+                        <div class="time">4:30pm</div>
                         <div class="activity">
-                            Have dinner
+                            Dinner
                             <div class="meal-details">200g Mutton + 15g cooking oil + 120g white Rice</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>88.8g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>39g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>26.7g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>763 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 90%; background: #ff2d55;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">7:50pm</div>
-                        <div class="activity">Sleep</div>
                     </div>
                     
-                    <div class="nutrition-info" id="monday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">304.7g</div>
-                                <div class="nutrition-label">Carbs</div>
+                    <div class="daily-summary">
+                        <h3><i class="fas fa-chart-pie"></i> Daily Nutrition Summary</h3>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <div class="summary-value">362g</div>
+                                <div class="summary-label">Carbs</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">166.7g</div>
-                                <div class="nutrition-label">Protein</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">166g</div>
+                                <div class="summary-label">Protein</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">65.1g</div>
-                                <div class="nutrition-label">Fat</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">65g</div>
+                                <div class="summary-label">Fat</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">2471 kcal</div>
-                                <div class="nutrition-label">Calories</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">2731</div>
+                                <div class="summary-label">Calories</div>
                             </div>
                         </div>
                     </div>
@@ -501,10 +627,17 @@
                 <div class="schedule-items">
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">3:50am</div>
+                        <div class="time">4:00am</div>
                         <div class="activity">
                             Breakfast
                             <div class="meal-details">2 Toast + 1Egg whole</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>54.6g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>20.9g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>11g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>405 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 65%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
@@ -513,450 +646,96 @@
                         <div class="activity">
                             Work <span class="highlight">(have lunch at work)</span>
                             <div class="meal-details">70g Brown Rice + 200g chicken breast + 10g olive oil + 33g of daal</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>64.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>56.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>20.1g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>646 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 88%; background: #5ac8fa;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">10:10am</div>
-                        <div class="activity">Reach home</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-capsules"></i></div>
                         <div class="time">10:30am</div>
-                        <div class="activity">
-                            Have PreWorkout
-                            <div class="meal-details">50g Oat + 80g milk lite + 75g Yogurt + 140g Blueberry + 4 Dates</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">11:00am</div>
-                        <div class="activity">Cook Daal, brown rice 3srv, chicken breast and soak white rice</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-dumbbell"></i></div>
-                        <div class="time">11:10am</div>
-                        <div class="activity">Go to gym</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">12:50pm</div>
-                        <div class="activity">Go to home</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">1:00pm</div>
-                        <div class="activity">
-                            Have snack
-                            <div class="meal-details">1srv whey protein and water Shake + 1 Weet-Bix</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">2:30pm</div>
-                        <div class="activity">Cook Thigh</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
-                        <div class="activity">
-                            Have dinner
-                            <div class="meal-details">150g Chicken Thi + 10g olive oil + 33g daal + 120g white Rice</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">7:50pm</div>
-                        <div class="activity">Sleep</div>
-                    </div>
-                    
-                    <div class="nutrition-info" id="tuesday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">302.6g</div>
-                                <div class="nutrition-label">Carbs</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">165.1g</div>
-                                <div class="nutrition-label">Protein</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">66.7g</div>
-                                <div class="nutrition-label">Fat</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">2471 kcal</div>
-                                <div class="nutrition-label">Calories</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Wednesday -->
-            <div class="day-card wednesday" id="wednesday">
-                <div class="day-header" onclick="toggleDay('wednesday')">
-                    <span>Wednesday</span>
-                    <i class="fas fa-chevron-down collapse-icon"></i>
-                </div>
-                <div class="schedule-items">
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">3:50am</div>
-                        <div class="activity">
-                            Breakfast
-                            <div class="meal-details">2 Toast + 1Egg whole</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-briefcase"></i></div>
-                        <div class="time">4am - 10am</div>
-                        <div class="activity">
-                            Work <span class="highlight">(have lunch at work)</span>
-                            <div class="meal-details">70g Brown Rice + 200g chicken breast + 10g olive oil + 33g of daal</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">10:10am</div>
-                        <div class="activity">Reach home</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">10:30am</div>
-                        <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake + 1 Weet-Bix</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">11:00am</div>
-                        <div class="activity">Soak white rice and 3srv daal</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-capsules"></i></div>
-                        <div class="time">2:00pm</div>
                         <div class="activity">
                             Preworkout
-                            <div class="meal-details">50g Oat + 80g milk lite + 75g Yogurt + 140g Blueberry + 4 Dates</div>
+                            <div class="meal-details">50g Oat + 75g milk lite + 150g Yogurt + 140g Blueberry + 1srv whey</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>65.3g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>38.8g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>11.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>535 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 80%; background: #ffcc00;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-dumbbell"></i></div>
-                        <div class="time">3:00pm</div>
-                        <div class="activity">Go to gym</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">4:30pm</div>
-                        <div class="activity">Go to home</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">5:00pm</div>
-                        <div class="activity">
-                            Cook Thigh and have dinner
-                            <div class="meal-details">150g Chicken Thi + 10g olive oil + 33g daal + 120g white Rice</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">9:00pm</div>
-                        <div class="activity">Sleep</div>
-                    </div>
-                    
-                    <div class="nutrition-info" id="wednesday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">302.6g</div>
-                                <div class="nutrition-label">Carbs</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">165.1g</div>
-                                <div class="nutrition-label">Protein</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">66.7g</div>
-                                <div class="nutrition-label">Fat</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">2471 kcal</div>
-                                <div class="nutrition-label">Calories</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Thursday -->
-            <div class="day-card thursday" id="thursday">
-                <div class="day-header" onclick="toggleDay('thursday')">
-                    <span>Thursday</span>
-                    <i class="fas fa-chevron-down collapse-icon"></i>
-                </div>
-                <div class="schedule-items">
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">7:00am</div>
-                        <div class="activity">
-                            Have breakfast
-                            <div class="meal-details">2 Toast + 2Egg whole</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">9:00am</div>
-                        <div class="activity">
-                            Cook chicken, 2srv daal, chicken breast and have lunch
-                            <div class="meal-details">70g Brown Rice + 200g chicken breast + 10g olive oil + 33g of daal</div>
-                        </div>
+                        <div class="time">11:30am - 12:30pm</div>
+                        <div class="activity">Gym</div>
                     </div>
                     <div class="schedule-item">
                         <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">12:00pm</div>
-                        <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-capsules"></i></div>
                         <div class="time">12:30pm</div>
                         <div class="activity">
-                            Have Preworkout
-                            <div class="meal-details">50g Oat + 80g milk lite + 75g Yogurt + 140g Blueberry + 4 Dates</div>
+                            Snack
+                            <div class="meal-details">4 Dates + 1 Banana (avg: 120g) + 2 Orange (avg: 130g each)</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>88.4g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>4.5g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>1.2g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>381 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 75%; background: #4cd964;"></div></div>
+                            </div>
                         </div>
                     </div>
                     <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-dumbbell"></i></div>
-                        <div class="time">1:30pm</div>
-                        <div class="activity">Go to gym</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-home"></i></div>
-                        <div class="time">3:00pm</div>
-                        <div class="activity">Go to home</div>
-                    </div>
-                    <div class="schedule-item">
                         <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">3:45pm</div>
-                        <div class="activity">Cook Vegi</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:00pm</div>
-                        <div class="activity">Cook Drumstick and wrap</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
+                        <div class="time">4:30pm</div>
                         <div class="activity">
-                            Have dinner
-                            <div class="meal-details">Vegi + 120g white Rice</div>
+                            Dinner
+                            <div class="meal-details">150g Chicken Thi + 10g olive oil + 33g daal + 120g white Rice</div>
+                            <div class="meal-macros">
+                                <div class="macro-detail"><span>Carbs:</span> <span>104.3g</span></div>
+                                <div class="macro-detail"><span>Protein:</span> <span>44.3g</span></div>
+                                <div class="macro-detail"><span>Fat:</span> <span>20.9g</span></div>
+                                <div class="macro-detail"><span>Calories:</span> <span>736 kcal</span></div>
+                                <div class="macro-bar"><div class="progress" style="width: 92%; background: #ff2d55;"></div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">9:00pm</div>
-                        <div class="activity">Sleep</div>
                     </div>
                     
-                    <div class="nutrition-info" id="thursday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">297.6g</div>
-                                <div class="nutrition-label">Carbs</div>
+                    <div class="daily-summary">
+                        <h3><i class="fas fa-chart-pie"></i> Daily Nutrition Summary</h3>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <div class="summary-value">377g</div>
+                                <div class="summary-label">Carbs</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">160.8g</div>
-                                <div class="nutrition-label">Protein</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">165g</div>
+                                <div class="summary-label">Protein</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">65.5g</div>
-                                <div class="nutrition-label">Fat</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">64g</div>
+                                <div class="summary-label">Fat</div>
                             </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">2424 kcal</div>
-                                <div class="nutrition-label">Calories</div>
+                            <div class="summary-stat">
+                                <div class="summary-value">2703</div>
+                                <div class="summary-label">Calories</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Friday -->
-            <div class="day-card friday" id="friday">
-                <div class="day-header" onclick="toggleDay('friday')">
-                    <span>Friday</span>
-                    <i class="fas fa-chevron-down collapse-icon"></i>
-                </div>
-                <div class="schedule-items">
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">7:00am</div>
-                        <div class="activity">
-                            Have breakfast and soak white rice and daal 4srv
-                            <div class="meal-details">2 Toast + 2Egg white</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">9:00am</div>
-                        <div class="activity">
-                            have lunch
-                            <div class="meal-details">2wrap + 200g drm</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">1:00pm</div>
-                        <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake + 140g Blueberry</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">3:45pm</div>
-                        <div class="activity">Cook Rice, daal and giblet</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:00pm</div>
-                        <div class="activity">Cook Drumstick and wrap</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
-                        <div class="activity">
-                            Have dinner
-                            <div class="meal-details">200g Fish + 10g olive oil + 33g daal + 120g white Rice + 1tuna</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">9:00pm</div>
-                        <div class="activity">Sleep</div>
-                    </div>
-                    
-                    <div class="nutrition-info" id="friday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">197.3g</div>
-                                <div class="nutrition-label">Carbs</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">158.6g</div>
-                                <div class="nutrition-label">Protein</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">50.3g</div>
-                                <div class="nutrition-label">Fat</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">1876 kcal</div>
-                                <div class="nutrition-label">Calories</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Additional days would follow the same pattern -->
             
-            <!-- Saturday -->
-            <div class="day-card saturday" id="saturday">
-                <div class="day-header" onclick="toggleDay('saturday')">
-                    <span>Saturday</span>
-                    <i class="fas fa-chevron-down collapse-icon"></i>
-                </div>
-                <div class="schedule-items">
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-egg"></i></div>
-                        <div class="time">7:00am</div>
-                        <div class="activity">
-                            Have breakfast
-                            <div class="meal-details">2 Toast + 2Egg white</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">9:00am</div>
-                        <div class="activity">
-                            have lunch and soak white and brown rice 3srv
-                            <div class="meal-details">2wrap + 200g drm</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-apple-alt"></i></div>
-                        <div class="time">1:00pm</div>
-                        <div class="activity">
-                            Have Snack
-                            <div class="meal-details">1srv whey protein and water Shake + 140g Blueberry</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:00pm</div>
-                        <div class="activity">
-                            Cook daal, 1srv chicken breast, and brown rice
-                            <div class="meal-details">200g Fish + 10g olive oil + 33g daal + 120g white Rice + 1tuna</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <div class="time">4:40pm</div>
-                        <div class="activity">
-                            Have dinner
-                            <div class="meal-details">200g Fish + 10g olive oil + 33g daal + 120g white Rice + 1tuna</div>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="icon"><i class="fas fa-bed"></i></div>
-                        <div class="time">7:50pm</div>
-                        <div class="activity">Sleep</div>
-                    </div>
-                    
-                    <div class="nutrition-info" id="saturday-nutrition">
-                        <div class="nutrition-title">
-                            <i class="fas fa-chart-pie"></i> Daily Nutrition Summary
-                        </div>
-                        <div class="nutrition-details">
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">197.3g</div>
-                                <div class="nutrition-label">Carbs</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">158.6g</div>
-                                <div class="nutrition-label">Protein</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">50.3g</div>
-                                <div class="nutrition-label">Fat</div>
-                            </div>
-                            <div class="nutrition-item">
-                                <div class="nutrition-value">1876 kcal</div>
-                                <div class="nutrition-label">Calories</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <div class="footer">
-            <p>Weekly Schedule & Nutrition Tracker © 2023</p>
+            <p>Fitness & Nutrition Planner © 2023 | Track Your Macros, Achieve Your Goals</p>
         </div>
     </div>
 
@@ -975,11 +754,11 @@
         // Function to toggle nutrition visibility
         function toggleNutrition() {
             document.body.classList.toggle('show-nutrition');
-            
-            // Toggle nutrition info panels
-            document.querySelectorAll('.nutrition-info').forEach(info => {
-                info.classList.toggle('visible');
-            });
+        }
+        
+        // Function to toggle macros visibility
+        function toggleMacros() {
+            document.body.classList.toggle('show-macros');
         }
         
         // Function to expand all days
